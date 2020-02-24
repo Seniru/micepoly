@@ -1,2 +1,115 @@
 --[[ Makinit's XML library ]]--
-local a="[%a_:][%w%.%-_:]*"function parseXml(b,c)if not c then b=string.gsub(b,"<!%[CDATA%[(.-)%]%]>",xmlEscape)b=string.gsub(b,"<%?.-%?>","")b=string.gsub(b,"<!%-%-.-%-%->","")b=string.gsub(b,"<!.->","")end;local d={}local e={}local f=d;for g,h,i,j,k in string.gmatch(b,"<(/?)("..a..")(.-)(/?)>%s*([^<]*)%s*")do if g=="/"then local l=e[f]if l and h==f.name then f=l end else local m={name=h,attribute={}}table.insert(f,m)e[m]=f;if j~="/"then f=m end;for h,n in string.gmatch(i,"("..a..")%s*=%s*\"(.-)\"")do m.attribute[h]=c and n or xmlUnescape(n)end end;if k~=""then local m={text=c and k or xmlUnescape(k)}table.insert(f,m)e[m]=f end end;return d[1]end;function generateXml(f,c)if f.name then local b="<"..f.name;for h,n in pairs(f.attribute)do b=b.." "..h.."=\""..(c and tostring(n)or xmlEscape(tostring(n))).."\""end;if#f==0 then b=b.." />"else b=b..">"for o,m in ipairs(f)do b=b..generateXml(m,c)end;b=b.."</"..f.name..">"end;return b elseif f.text then return c and tostring(f.text)or xmlEscape(tostring(f.text))end end;function path(p,...)p={p}for o,h in ipairs(arg)do local q={}for o,r in ipairs(p)do for o,m in ipairs(r)do if m.name==h then table.insert(q,m)end end end;p=q end;return p end;local s={}function xmlEscape(t)local u=s[t]if not u then local v=string.gsub;u=v(t,"&","&amp;")u=v(u,"\"","&quot;")u=v(u,"'","&apos;")u=v(u,"<","&lt;")u=v(u,">","&gt;")s[t]=u end;return u end;local w={}function xmlUnescape(t)local u=w[t]if not u then local v=string.gsub;u=v(t,"&quot;","\"")u=v(u,"&apos;","'")u=v(u,"&lt;","<")u=v(u,"&gt;",">")u=v(u,"&#(%d%d?%d?%d?);",dec2char)u=v(u,"&#x(%x%x?%x?%x?);",hex2char)u=v(u,"&amp;","&")w[t]=u end;return u end;function dec2char(x)x=tonumber(x)return string.char(x>255 and 0 or x)end;function hex2char(x)x=tonumber(x,16)return string.char(x>255 and 0 or x)end
+local _ = "Makinit's XML library"
+local namePattern = "[%a_:][%w%.%-_:]*"
+function parseXml(xml, fast)
+    if not fast then
+        xml = string.gsub(xml, "<!%[CDATA%[(.-)%]%]>", xmlEscape) -- replace CDATA with escaped text
+        xml = string.gsub(xml, "<%?.-%?>", "") -- remove processing instructions
+        xml = string.gsub(xml, "<!%-%-.-%-%->", "") -- remove comments
+        xml = string.gsub(xml, "<!.->", "")
+    end
+    local root = {}
+    local parents = {}
+    local element = root
+    for closing, name, attributes, empty, text in string.gmatch(xml, "<(/?)(" .. namePattern .. ")(.-)(/?)>%s*([^<]*)%s*") do
+        if closing == "/" then
+            local parent = parents[element]
+            if parent and name == element.name then
+                element = parent
+            end
+        else
+            local child = {name = name, attribute = {}}
+            table.insert(element, child)
+            parents[child] = element
+            if empty ~= "/" then
+                element = child
+            end
+            for name, value in string.gmatch(attributes, "(" .. namePattern .. ")%s*=%s*\"(.-)\"") do
+                child.attribute[name] = fast and value or xmlUnescape(value)
+            end
+        end
+        if text ~= "" then
+            local child = {text = fast and text or xmlUnescape(text)}
+            table.insert(element, child)
+            parents[child] = element
+        end
+    end
+    return root[1]
+end
+
+function generateXml(element, fast)
+    if element.name then
+        local xml = "<" .. element.name
+        for name, value in pairs(element.attribute) do
+            xml = xml .. " " .. name .. "=\"" .. (fast and tostring(value) or xmlEscape(tostring(value))) .. "\""
+        end
+        if #element == 0 then
+            xml = xml .. " />"
+        else
+            xml = xml .. ">"
+            for i, child in ipairs(element) do
+                xml = xml .. generateXml(child, fast)
+            end
+            xml = xml .. "</" .. element.name .. ">"
+        end
+        return xml
+    elseif element.text then
+        return fast and tostring(element.text) or xmlEscape(tostring(element.text))
+    end
+end
+
+function path(nodes, ...)
+    nodes = {nodes}
+    for i, name in ipairs(arg) do
+        local match = {}
+        for i, node in ipairs(nodes) do
+            for i, child in ipairs(node) do
+                if child.name == name then
+                    table.insert(match, child)
+                end
+            end
+        end
+        nodes = match
+    end
+    return nodes
+end
+
+--(un)escape functions
+local escapeCache = {}
+function xmlEscape(s)
+    local r = escapeCache[s ]
+    if not r then    
+        local g = string.gsub
+        r = g(s, "&", "&amp;")
+        r = g(r, "\"", "&quot;")
+        r = g(r, "'", "&apos;")
+        r = g(r, "<", "&lt;")
+        r = g(r, ">", "&gt;")
+        escapeCache[s ] = r
+    end
+    return r
+end
+local unescapeCache = {}
+function xmlUnescape(s)
+    local r = unescapeCache[s ]
+    if not r then
+        local g = string.gsub
+        r = g(s, "&quot;", "\"")
+        r = g(r, "&apos;", "'")
+        r = g(r, "&lt;", "<")
+        r = g(r, "&gt;", ">")
+        r = g(r, "&#(%d%d?%d?%d?);", dec2char)
+        r = g(r, "&#x(%x%x?%x?%x?);", hex2char)
+        r = g(r, "&amp;", "&")
+        unescapeCache[s ] = r
+    end
+    return r
+end
+function dec2char(code)
+    code = tonumber(code)
+    return string.char(code > 255 and 0 or code)
+end
+function hex2char(code)
+    code = tonumber(code, 16)
+    return string.char(code > 255 and 0 or code)
+end

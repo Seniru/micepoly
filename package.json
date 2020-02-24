@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/Seniru/micepoly/issues"
   },
-  "homepage": "https://github.com/Seniru/micepoly#readme"
+  "homepage": "https://github.com/Seniru/micepoly#readme",
+  "dependencies": {
+    "luamin": "^1.0.4"
+  }
 }

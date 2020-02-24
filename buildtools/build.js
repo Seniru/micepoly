@@ -1,4 +1,5 @@
 const combine = require("./combine")
+const luamin = require("luamin")
 
 combine({
     libs: {
@@ -7,6 +8,7 @@ combine({
             "libs/Player.lua",
             "libs/xmllib.lua"
         ],
+        compressFunction: (chunk) => luamin.minify(chunk)
     },
     map: {
         files: [
