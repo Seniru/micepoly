@@ -1,1 +1,3 @@
-print('hello world')
+function eventNewPlayer(name)
+
+end
