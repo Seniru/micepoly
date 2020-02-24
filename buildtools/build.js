@@ -1,5 +1,6 @@
 const combine = require("./combine")
 const luamin = require("luamin")
+const vkbeauty = require("vkbeautify")
 
 combine({
     libs: {
@@ -16,8 +17,13 @@ combine({
         ],
         prefix: "local map = [[",
         suffix: "]]\n",
-        compressFunction: (chunk) => chunk.replace(/[\n\t\s]+/g, " ")
+        compressFunction: (chunk) => vkbeauty.xmlmin(chunk)
 
+    },
+    main: {
+        files: [
+            "src/main.lua"
+        ]
     },
     events: {
         files: [

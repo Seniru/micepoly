@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/Seniru/micepoly#readme",
   "dependencies": {
-    "luamin": "^1.0.4"
+    "luamin": "^1.0.4",
+    "vkbeautify": "^0.99.3"
   }
 }

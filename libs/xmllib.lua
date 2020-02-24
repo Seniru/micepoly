@@ -1,5 +1,5 @@
 --[[ Makinit's XML library ]]--
-local _ = "Makinit's XML library"
+local lib = "Makinit's XML library"
 local namePattern = "[%a_:][%w%.%-_:]*"
 function parseXml(xml, fast)
     if not fast then

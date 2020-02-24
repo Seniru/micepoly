@@ -1,6 +1,6 @@
 const fs = require("fs")
 
-const OUTPUT_FILE_LOC = "./main.lua"
+const OUTPUT_FILE_LOC = "./index.lua"
 
 module.exports = (segments) => {
     return new Promise((resolve, reject) => {
@@ -19,7 +19,7 @@ module.exports = (segments) => {
                 }
                 writer.write("\n")
             }
-
+            writer.write("main()\n")
             writer.end()
             console.log("\x1b[1m\x1b[32m%s\x1b[0m", "Succesfully wrote the file!")
             resolve(true)
