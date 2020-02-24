@@ -3,13 +3,17 @@ const luamin = require("luamin")
 const vkbeauty = require("vkbeautify")
 
 combine({
-    libs: {
+    exlibs: {
         files: [
-            "libs/Land.lua",
-            "libs/Player.lua",
             "libs/xmllib.lua"
         ],
         compressFunction: (chunk) => luamin.minify(chunk)
+    },
+    libs: {
+        files: [
+            "libs/Player.lua",
+            "libs/Land.lua"
+        ]
     },
     map: {
         files: [
