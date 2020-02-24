@@ -18,3 +18,8 @@ function Player.new(name)
     self.ownedLands = {}
     return self
 end
+
+function Player:goTo(land)
+    print(points[2])
+    --tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+end
