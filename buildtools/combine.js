@@ -11,10 +11,11 @@ module.exports = (segments) => {
         writer.once("open", (fd) => {
             
             for (let type of Object.keys(segments)) {
-                writer.write(`--[[ ${type} ]]--\n\n`)
-                for (let filePath of segments[type]) {
+                writer.write(`--==[[ ${type} ]]==--\n\n`)
+                for (let filePath of segments[type].files) {
                     console.log(`\x1b[93mWriting ${filePath}`)
-                    writer.write(fs.readFileSync(`./${filePath}`) + "\n")
+                    let chunk = fs.readFileSync(`./${filePath}`).toString()
+                    writer.write((segments[type].prefix || "") + (segments[type].compressFunction ? segments[type].compressFunction(chunk) : chunk) + (segments[type].suffix || "\n"))
                 }
                 writer.write("\n")
             }
