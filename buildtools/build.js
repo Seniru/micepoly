@@ -9,12 +9,6 @@ combine({
         ],
         compressFunction: (chunk) => luamin.minify(chunk)
     },
-    libs: {
-        files: [
-            "libs/Player.lua",
-            "libs/Land.lua"
-        ]
-    },
     map: {
         files: [
             "src/map.xml"
@@ -22,11 +16,17 @@ combine({
         prefix: "local map = [[",
         suffix: "]]\n",
         compressFunction: (chunk) => vkbeauty.xmlmin(chunk)
-
+        
     },
     main: {
         files: [
             "src/main.lua"
+        ]
+    },
+    libs: {
+        files: [
+            "libs/Player.lua",
+            "libs/Land.lua"
         ]
     },
     events: {
