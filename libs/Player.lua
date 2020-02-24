@@ -20,6 +20,5 @@ function Player.new(name)
 end
 
 function Player:goTo(land)
-    print(points[2])
-    --tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+    tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
 end
