@@ -11,7 +11,8 @@ setmetatable(Land, {
     end,
 })
 
-function Land.new(name, price, color, landIndex, isSpecial)
+function Land.new(name, price, color, landIndex, landRent, house1Rent, house2Rent, house3Rent, house4Rent, hotelRent, buildCost, isSpecial)
+    
     local self = setmetatable({}, Land)
     self.name = name
     self.price = price
@@ -22,8 +23,18 @@ function Land.new(name, price, color, landIndex, isSpecial)
     self.hasHotel = false
     self.owner = nil
     self.onland = nil
+
+    self.landRent = landRent
+    self.house1Rent = house1Rent
+    self.house2Rent = house2Rent
+    self.house3Rent = house3Rent
+    self.house4Rent = house4Rent
+    self.hotelRent = hotelRent
+    self.buildCost = buildCost
+
     self.locX = points[landIndex].x
     self.locY = points[landIndex].y
+
     return self
 end
 
