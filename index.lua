@@ -106,6 +106,7 @@ tfm.exec.disableAutoNewGame()
 tfm.exec.disableAutoTimeLeft()
 tfm.exec.disableAfkDeath()
 
+
 function initLands()
 
     -- configuring the lands
@@ -149,12 +150,20 @@ function initLands()
     lands[38] = Land("Haunted Library", 3500, "dark blue", 38)
     lands[39] = Land("Super Tax", nil, nil, 39, true)
     lands[40] = Land("Temple", 4000, "dark blue", 40)
-
+    
     --overriding the behaviours of special lands
     lands[1].onLand = function(self, player)
         player.money = player.money + 2000
     end
+    
+    displayLands()
+    
+end
 
+function displayLands(target)
+    for id, land in next, lands do
+        ui.addTextArea(1000 + id, "<b>" .. land.name .. "</b>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
+    end
 end
 
 function main()
@@ -185,7 +194,8 @@ function eventNewGame()
 end
 
 function eventNewPlayer(name)
-
+    displayLands(name)
 end
+
 
 main()
