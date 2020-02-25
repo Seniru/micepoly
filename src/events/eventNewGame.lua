@@ -13,4 +13,7 @@ function eventNewGame()
         players[name] = Player(name) 
     end
 
+    --initializing the lands
+    initLands()
+
 end

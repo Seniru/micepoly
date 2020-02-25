@@ -18,15 +18,16 @@ combine({
         compressFunction: (chunk) => vkbeauty.xmlmin(chunk)
         
     },
+    libs: {
+        files: [
+            "src/init.lua",
+            "libs/Player.lua",
+            "libs/Land.lua"
+        ]
+    },
     main: {
         files: [
             "src/main.lua"
-        ]
-    },
-    libs: {
-        files: [
-            "libs/Player.lua",
-            "libs/Land.lua"
         ]
     },
     events: {
