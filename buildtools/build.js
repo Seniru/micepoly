@@ -18,6 +18,14 @@ combine({
         compressFunction: (chunk) => vkbeauty.xmlmin(chunk)
         
     },
+    lobby: {
+        files: [
+            "src/lobby.xml"
+        ],
+        prefix: "local lobby = [[",
+        suffix: "]]\n",
+        compressFunction: (chunk) => vkbeauty.xmlmin(chunk)
+    },
     libs: {
         files: [
             "src/init.lua",
