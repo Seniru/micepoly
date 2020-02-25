@@ -1,19 +1,33 @@
 function eventNewGame()
     
-    --parsing the map's xml and getting the land points
-    local mapDom = parseXml(map, true)
-    for _, o in next, path(mapDom, "Z", "S", "S") do
-        if o.attribute.lua then
-            points[tonumber(o.attribute.lua)] = {x = o.attribute.X, y = o.attribute.Y}
+    if gameStarted then
+        --parsing the map's xml and getting the land points
+        local mapDom = parseXml(map, true)
+        for _, o in next, path(mapDom, "Z", "S", "S") do
+            if o.attribute.lua then
+                points[tonumber(o.attribute.lua)] = {x = o.attribute.X, y = o.attribute.Y}
+            end
+        end
+
+        --initializing the players
+        for name, player in next, tfm.get.room.playerList do
+            players[name] = Player(name) 
+        end
+
+        --initializing the lands
+        initLands()
+   
+    else
+        for _, _ in next, tfm.get.room.playerList do
+            totalPlayers = totalPlayers + 1
+        end
+        if totalPlayers >= 2 then
+            tfm.exec.chatMessage("Starting the game in 10 seconds...")
+            Timer("start game", function()
+                gameStarted = true
+                tfm.exec.newGame(map)
+            end, 10000, false)
         end
     end
-
-    --initializing the players
-    for name, player in next, tfm.get.room.playerList do
-        players[name] = Player(name) 
-    end
-
-    --initializing the lands
-    initLands()
 
 end

@@ -2,7 +2,8 @@
 tfm.exec.disableAutoNewGame()
 tfm.exec.disableAutoTimeLeft()
 tfm.exec.disableAfkDeath()
-
+tfm.exec.disableAutoShaman()
+tfm.exec.disableMortCommand()
 
 function initLands()
 
@@ -64,5 +65,5 @@ function displayLands(target)
 end
 
 function main()
-    tfm.exec.newGame(map)
+    tfm.exec.newGame(lobby)
 end

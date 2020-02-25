@@ -29,8 +29,9 @@ combine({
     libs: {
         files: [
             "src/init.lua",
+            "libs/timers4tfm.lua",
             "libs/Player.lua",
-            "libs/Land.lua"
+            "libs/Land.lua",
         ]
     },
     main: {
@@ -41,7 +42,9 @@ combine({
     events: {
         files: [
             "src/events/eventNewGame.lua",
-            "src/events/eventNewPlayer.lua"
+            "src/events/eventNewPlayer.lua",
+            "src/events/eventPlayerLeft.lua",
+            "src/events/eventLoop.lua",
         ]
     }
     
