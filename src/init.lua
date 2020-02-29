@@ -2,3 +2,4 @@
 local points, players, lands = {}, {}, {}
 local gameStarted = false
 local totalPlayers = 0
+local turn = nil

@@ -26,6 +26,7 @@ function eventNewGame()
             Timer("start game", function()
                 gameStarted = true
                 tfm.exec.newGame(map)
+                setUI()
             end, 10000, false)
         end
     end

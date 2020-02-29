@@ -67,6 +67,15 @@ function displayLands(target)
     end
 end
 
+function setUI(target)
+    -- dice 1
+    ui.addTextArea(10, "-", target, 700, 50, 50, 50, nil, nil, 1, true)
+    -- dice 2
+    ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
+    -- roll button
+    ui.addTextArea(12, "<a href='event:roll'>Roll!</a>", target, 720, 120, 200, 30, nil, nil, 1, true)
+end
+
 function main()
     tfm.exec.newGame(lobby)
 end
