@@ -16,6 +16,7 @@ local lobby = [[<C><P /><Z><S><S X="401" Y="396" T="0" L="804" H="20" P="0,0,0.3
 local points, players, lands = {}, {}, {}
 local gameStarted = false
 local totalPlayers = 0
+local turn = nil
 
 --Timers4TFm
 local a={}a.__index=a;a._timers={}a._init=false;a._clock=0;setmetatable(a,{__call=function(b,...)return b.new(...)end})function a.init(c)if not a._init then a._init=true;a._clock=c end end;function a.process(d)a._clock=d;for e,f in next,a._timers do if f:isAlive()and f:getMatureTime()<=a._clock then f:call()if f.loop then f:reset()else f:kill()end end end end;function a.run(d)a.init(d)a.process(d)end;function a.new(g,h,i,j,...)local self=setmetatable({},a)self.id=g;self.callback=h;self.timeout=i;self.mature=a._clock+i;self.loop=j;self.args={...}self.alive=true;a._timers[g]=self;return self end;function a:getId()return self.id end;function a:getTimeout()return self.timeout end;function a:isLooping()return self.loop end;function a:getMatureTime()return self.mature end;function a:isAlive()return self.alive end;function a:setCallback(k)self.callback=k end;function a:addTime(c)self.mature=self.mature+c end;function a:setLoop(j)self.loop=j end;function a:setArgs(...)self.args={...}end;function a:call()self.callback(table.unpack(self.args))end;function a:kill()self.alive=false;self=nil end;function a:reset()self.mature=a._clock+self.timeout end;Timer=a
@@ -190,6 +191,15 @@ function displayLands(target)
     end
 end
 
+function setUI(target)
+    -- dice 1
+    ui.addTextArea(10, "-", target, 700, 50, 50, 50, nil, nil, 1, true)
+    -- dice 2
+    ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
+    -- roll button
+    ui.addTextArea(12, "<a href='event:roll'>Roll!</a>", target, 720, 120, 200, 30, nil, nil, 1, true)
+end
+
 function main()
     tfm.exec.newGame(lobby)
 end
@@ -225,6 +235,7 @@ function eventNewGame()
             Timer("start game", function()
                 gameStarted = true
                 tfm.exec.newGame(map)
+                setUI()
             end, 10000, false)
         end
     end
@@ -235,6 +246,7 @@ function eventNewPlayer(name)
     totalPlayers = totalPlayers + 1
     if gameStarted then
         displayLands(name)
+        setUI(name)
     elseif not gameStarted and totalPlayers >= 2 then
         tfm.exec.chatMessage("Starting the game in 10 seconds...")
         Timer("start game", function()
