@@ -292,6 +292,7 @@ function eventTextAreaCallback(id, name, evt)
         changeTurn()
     end
 end
+
 function eventLoop(tc, tr)
     Timer.run(tc)
 end
