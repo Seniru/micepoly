@@ -63,7 +63,7 @@ end
 
 function displayLands(target)
     for id, land in next, lands do
-        ui.addTextArea(1000 + id, "<b>" .. land.name .. "</b>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
+        ui.addTextArea(1000 + id, "<a href='event:land:" .. id .. "'><b>" .. land.name .. "</b></a>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
     end
 end
 
@@ -87,6 +87,16 @@ function setUI(target)
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
     ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
+end
+
+function showLandInfo(id, target)
+    local land = lands[id]
+    local res = land.name ..
+        "\nPrice: " .. land.price ..
+        "\nOwner:" .. (land.owner or "NA")
+    
+    ui.addTextArea(10000, res, target, 100, 100, 100, 100, nil, nil, 1, true)
+
 end
 
 function main()

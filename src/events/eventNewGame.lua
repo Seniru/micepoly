@@ -18,7 +18,7 @@ function eventNewGame()
         initLands()
 
         --giving the turn to the first player
-        changeTurn()        
+        changeTurn()
    
     else
         for _, _ in next, tfm.get.room.playerList do
