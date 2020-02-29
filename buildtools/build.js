@@ -44,6 +44,7 @@ combine({
             "src/events/eventNewGame.lua",
             "src/events/eventNewPlayer.lua",
             "src/events/eventPlayerLeft.lua",
+            "src/events/eventTextAreaCallback.lua",
             "src/events/eventLoop.lua",
         ]
     }

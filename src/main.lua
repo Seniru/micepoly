@@ -67,13 +67,26 @@ function displayLands(target)
     end
 end
 
+function getNext(current)
+    return next(players, current) or next(players)
+end
+
+function changeTurn()
+    local curr = current
+    local next = getNext(curr)
+    print(next)
+    ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
+    ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
+    current = next
+end
+
 function setUI(target)
     -- dice 1
     ui.addTextArea(10, "-", target, 700, 50, 50, 50, nil, nil, 1, true)
     -- dice 2
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
-    ui.addTextArea(12, "<a href='event:roll'>Roll!</a>", target, 720, 120, 200, 30, nil, nil, 1, true)
+    ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
 end
 
 function main()

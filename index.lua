@@ -16,7 +16,7 @@ local lobby = [[<C><P /><Z><S><S X="401" Y="396" T="0" L="804" H="20" P="0,0,0.3
 local points, players, lands = {}, {}, {}
 local gameStarted = false
 local totalPlayers = 0
-local turn = nil
+local current = nil
 
 --Timers4TFm
 local a={}a.__index=a;a._timers={}a._init=false;a._clock=0;setmetatable(a,{__call=function(b,...)return b.new(...)end})function a.init(c)if not a._init then a._init=true;a._clock=c end end;function a.process(d)a._clock=d;for e,f in next,a._timers do if f:isAlive()and f:getMatureTime()<=a._clock then f:call()if f.loop then f:reset()else f:kill()end end end end;function a.run(d)a.init(d)a.process(d)end;function a.new(g,h,i,j,...)local self=setmetatable({},a)self.id=g;self.callback=h;self.timeout=i;self.mature=a._clock+i;self.loop=j;self.args={...}self.alive=true;a._timers[g]=self;return self end;function a:getId()return self.id end;function a:getTimeout()return self.timeout end;function a:isLooping()return self.loop end;function a:getMatureTime()return self.mature end;function a:isAlive()return self.alive end;function a:setCallback(k)self.callback=k end;function a:addTime(c)self.mature=self.mature+c end;function a:setLoop(j)self.loop=j end;function a:setArgs(...)self.args={...}end;function a:call()self.callback(table.unpack(self.args))end;function a:kill()self.alive=false;self=nil end;function a:reset()self.mature=a._clock+self.timeout end;Timer=a
@@ -39,6 +39,7 @@ function Player.new(name)
     self.name = name
     self.money = 15000
     self.ownedLands = {}
+    self.current = 1
     return self
 end
 
@@ -191,13 +192,26 @@ function displayLands(target)
     end
 end
 
+function getNext(current)
+    return next(players, current) or next(players)
+end
+
+function changeTurn()
+    local curr = current
+    local next = getNext(curr)
+    print(next)
+    ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
+    ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
+    current = next
+end
+
 function setUI(target)
     -- dice 1
     ui.addTextArea(10, "-", target, 700, 50, 50, 50, nil, nil, 1, true)
     -- dice 2
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
-    ui.addTextArea(12, "<a href='event:roll'>Roll!</a>", target, 720, 120, 200, 30, nil, nil, 1, true)
+    ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
 end
 
 function main()
@@ -225,6 +239,9 @@ function eventNewGame()
 
         --initializing the lands
         initLands()
+
+        --giving the turn to the first player
+        changeTurn()        
    
     else
         for _, _ in next, tfm.get.room.playerList do
@@ -236,7 +253,8 @@ function eventNewGame()
                 gameStarted = true
                 tfm.exec.newGame(map)
                 setUI()
-            end, 10000, false)
+                --todo: set this 10 seconds
+            end, 4000, false)
         end
     end
 
@@ -258,6 +276,21 @@ end
 
 function eventPlayerLeft(name)
     totalPlayers = totalPlayers - 1
+end
+function eventTextAreaCallback(id, name, evt)
+    if evt == "roll" and name == current then
+        local die1 = math.random(1, 6)
+        local die2 = math.random(1, 6)
+        local total = die1 + die2
+        ui.updateTextArea(10, die1)
+        ui.updateTextArea(11, die2)
+        players[name].current = players[name].current + total
+        if players[name].current >= 40 then
+            players[name].current = players[name].current - 40
+        end
+        players[name]:goTo(players[name].current)
+        changeTurn()
+    end
 end
 function eventLoop(tc, tr)
     Timer.run(tc)

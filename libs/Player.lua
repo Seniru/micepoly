@@ -16,6 +16,7 @@ function Player.new(name)
     self.name = name
     self.money = 15000
     self.ownedLands = {}
+    self.current = 1
     return self
 end
 

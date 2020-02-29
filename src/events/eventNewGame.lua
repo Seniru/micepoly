@@ -16,6 +16,9 @@ function eventNewGame()
 
         --initializing the lands
         initLands()
+
+        --giving the turn to the first player
+        changeTurn()        
    
     else
         for _, _ in next, tfm.get.room.playerList do
@@ -27,7 +30,8 @@ function eventNewGame()
                 gameStarted = true
                 tfm.exec.newGame(map)
                 setUI()
-            end, 10000, false)
+                --todo: set this 10 seconds
+            end, 4000, false)
         end
     end
 
