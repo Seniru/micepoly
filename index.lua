@@ -13,7 +13,7 @@ local lobby = [[<C><P /><Z><S><S X="401" Y="396" T="0" L="804" H="20" P="0,0,0.3
 --==[[ libs ]]==--
 
 --game variables
-local points, players, lands = {}, {}, {}
+local points, players, lands, chances, communityChests = {}, {}, {}, {}, {}
 local gameStarted = false
 local totalPlayers = 0
 local current = nil
@@ -64,9 +64,34 @@ setmetatable(Chance, {
     end,
 })
 
-function Chance:new(id, header, desc)
+function Chance:new(id, header, desc, action)
     --class Chance extends Card
     local self = setmetatable(Card:new(id, header, desc), self)
+    function self:action(player, ...)
+        return action(player, ...)
+    end
+    return self
+end
+
+--[[ CommunityChest class ]]--
+local CommunityChest = Card:new()
+CommunityChest.__index = Card
+CommunityChest.__tostring = function(self)
+    return "[name=" .. self.name .. ", money: " .. self.money .. "]"
+end
+
+setmetatable(CommunityChest, {
+    __call = function (cls, name)
+        return cls.new(name)
+    end,
+})
+
+function CommunityChest:new(id, header, desc, action)
+    --class CommunityChest extends Card
+    local self = setmetatable(Card:new(id, header, desc), self)
+    function self:action(player, ...)
+        return action(player, ...)
+    end
     return self
 end
 
@@ -210,6 +235,22 @@ tfm.exec.disableAfkDeath()
 tfm.exec.disableAutoShaman()
 tfm.exec.disableMortCommand()
 
+function initCards()
+    
+    chances = {
+        Chance:new(1, "Do nothing", "This card is just a test", function(player) 
+            print("Do nothing " .. player.name)
+        end)
+    }
+
+    communityChests = {
+        CommunityChest:new(1, "Do nothing", "This card is just a test", function(player) 
+            print("Do nothing " .. player.name)
+        end)
+    }
+
+end
+
 function initLands()
 
     --[[ configuring the lands
@@ -258,10 +299,19 @@ function initLands()
     lands[40] = Land("Temple", 4000, "dark blue", 40, 500, 2000, 6000, 14000, 17000, 20000, 2000)
     
     --overriding the behaviours of special lands
-    lands[1].onLand = function(self, player)
-        player.money = player.money + 2000
+    lands[3].onLand = function(self, player)
+        --community chest
+        communityChests[1]:action(player)
     end
-    
+
+    lands[8].onLand = function(self, player)
+        chances[1]:action(player)
+    end
+
+    lands[18].onLand = function(self, player)
+        communityChests[1]:action(player)
+    end
+
     displayLands()
     
 end
@@ -297,11 +347,10 @@ end
 function showLandInfo(id, target)
     local land = lands[id]
     local res = land.name ..
-        "\nPrice: " .. land.price ..
+        "\nPrice: " .. (land.price or "0")..
         "\nOwner:" .. (land.owner or "NA")
     
     ui.addTextArea(10000, res, target, 100, 100, 100, 100, nil, nil, 1, true)
-
 end
 
 function main()
@@ -327,10 +376,12 @@ function eventNewGame()
             players[name] = Player(name) 
         end
 
-        --initializing the lands
+        --initializing lands and cards
         initLands()
+        initCards()
 
         --giving the turn to the first player
+        players["King_seniru#5890"]:goTo(8)
         changeTurn()
    
     else
