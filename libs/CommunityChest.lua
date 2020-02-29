@@ -1,18 +1,18 @@
---[[ Chance class ]]--
-local Chance = Card:new()
-Chance.__index = Card
-Chance.__tostring = function(self)
+--[[ CommunityChest class ]]--
+local CommunityChest = Card:new()
+CommunityChest.__index = Card
+CommunityChest.__tostring = function(self)
     return "[name=" .. self.name .. ", money: " .. self.money .. "]"
 end
 
-setmetatable(Chance, {
+setmetatable(CommunityChest, {
     __call = function (cls, name)
         return cls.new(name)
     end,
 })
 
-function Chance:new(id, header, desc, action)
-    --class Chance extends Card
+function CommunityChest:new(id, header, desc, action)
+    --class CommunityChest extends Card
     local self = setmetatable(Card:new(id, header, desc), self)
     function self:action(player, ...)
         return action(player, ...)

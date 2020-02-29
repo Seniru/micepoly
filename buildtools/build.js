@@ -32,6 +32,7 @@ combine({
             "libs/timers4tfm.lua",
             "libs/Card.lua",
             "libs/Chance.lua",
+            "libs/CommunityChest.lua",
             "libs/Player.lua",
             "libs/Land.lua",
             "libs/utils.lua"
