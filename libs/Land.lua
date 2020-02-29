@@ -43,10 +43,12 @@ function Land:removeOwner(owner)
 end
 
 function Land:setOwner(owner)
-    if owner then
+    if self.owner then
         error(self.name .. " already has an owner")
+    else
+        players[owner]:addMoney(-self.price)
+        self.owner = owner
     end
-    self.owner = owner
 end
 
 function Land:addHouse()

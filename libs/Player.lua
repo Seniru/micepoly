@@ -21,7 +21,24 @@ function Player.new(name)
 end
 
 function Player:goTo(land)
+    local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+    if landObj.isSpecial then
+        landObj:onLand(self)
+        --todo: remove this line after implementing all special cases
+        changeTurn()
+    else
+        if not landObj.owner then
+            ui.addTextArea(11000, "Buy or bid? --bid not supported--", self.name, 300, 100, 100, 100, nil, nil, 1, true)
+            ui.addTextArea(11001, "<a href='event:buy:" .. landObj.landIndex .. "'>Buy</a>", self.name, 300, 250, 50, 50, nil, nil, 1, true)
+            --todo: Implement the bid functionality and change the link text
+            ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Bid</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
+        else
+            self:addMoney(-landObj.landRent)
+            players[landObj.owner]:addMoney(landObj.landRent)
+            changeTurn()
+        end
+    end
 end
 
 function Player:addMoney(amount)

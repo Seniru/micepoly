@@ -12,13 +12,20 @@ function eventTextAreaCallback(id, name, evt)
             players[name]:addMoney(2000)
         end
         players[name]:goTo(players[name].current)
-        changeTurn()
         print(tostring(players[name]))
-    --complex events
+        --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
+        --land info display event
         if key == "land" then
             showLandInfo(tonumber(value), name)
+        --buy land evet
+        elseif key == "buy" then
+            lands[tonumber(value)]:setOwner(name)
+            ui.removeTextArea(11000, name)
+            ui.removeTextArea(11001, name)
+            ui.removeTextArea(11002, name)
+            changeTurn()
         end
     end
 end
