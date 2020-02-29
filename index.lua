@@ -25,7 +25,7 @@ local a={}a.__index=a;a._timers={}a._init=false;a._clock=0;setmetatable(a,{__cal
 local Player = {}
 Player.__index = Player
 Player.__tostring = function(self)
-    return "[name=" .. self.name .. "]"
+    return "[name=" .. self.name .. ", money: " .. self.money .. "]"
 end
 
 setmetatable(Player, {
@@ -45,6 +45,10 @@ end
 
 function Player:goTo(land)
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+end
+
+function Player:addMoney(amount)
+    self.money = self.money + amount
 end
 
 --[[ Land class ]]
@@ -120,6 +124,14 @@ function Land:onLand(player, ...)
     return false
 end
 
+function split(s, delimiter)
+    result = {};
+    for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+        table.insert(result, match);
+    end
+    return result;
+end
+
 
 --==[[ main ]]==--
 
@@ -188,7 +200,7 @@ end
 
 function displayLands(target)
     for id, land in next, lands do
-        ui.addTextArea(1000 + id, "<b>" .. land.name .. "</b>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
+        ui.addTextArea(1000 + id, "<a href='event:land:" .. id .. "'><b>" .. land.name .. "</b></a>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
     end
 end
 
@@ -212,6 +224,16 @@ function setUI(target)
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
     ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
+end
+
+function showLandInfo(id, target)
+    local land = lands[id]
+    local res = land.name ..
+        "\nPrice: " .. land.price ..
+        "\nOwner:" .. (land.owner or "NA")
+    
+    ui.addTextArea(10000, res, target, 100, 100, 100, 100, nil, nil, 1, true)
+
 end
 
 function main()
@@ -241,7 +263,7 @@ function eventNewGame()
         initLands()
 
         --giving the turn to the first player
-        changeTurn()        
+        changeTurn()
    
     else
         for _, _ in next, tfm.get.room.playerList do
@@ -278,6 +300,7 @@ function eventPlayerLeft(name)
     totalPlayers = totalPlayers - 1
 end
 function eventTextAreaCallback(id, name, evt)
+    --dice rolling event
     if evt == "roll" and name == current then
         local die1 = math.random(1, 6)
         local die2 = math.random(1, 6)
@@ -285,11 +308,19 @@ function eventTextAreaCallback(id, name, evt)
         ui.updateTextArea(10, die1)
         ui.updateTextArea(11, die2)
         players[name].current = players[name].current + total
-        if players[name].current >= 40 then
+        if players[name].current > 40 then
             players[name].current = players[name].current - 40
+            players[name]:addMoney(2000)
         end
         players[name]:goTo(players[name].current)
         changeTurn()
+        print(tostring(players[name]))
+    --complex events
+    elseif evt:find("^%w+:%w+$") then
+        local key, value = table.unpack(split(evt, ":"))
+        if key == "land" then
+            showLandInfo(tonumber(value), name)
+        end
     end
 end
 
