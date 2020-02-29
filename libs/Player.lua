@@ -2,7 +2,7 @@
 local Player = {}
 Player.__index = Player
 Player.__tostring = function(self)
-    return "[name=" .. self.name .. "]"
+    return "[name=" .. self.name .. ", money: " .. self.money .. "]"
 end
 
 setmetatable(Player, {
@@ -22,4 +22,8 @@ end
 
 function Player:goTo(land)
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+end
+
+function Player:addMoney(amount)
+    self.money = self.money + amount
 end

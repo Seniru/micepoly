@@ -6,10 +6,12 @@ function eventTextAreaCallback(id, name, evt)
         ui.updateTextArea(10, die1)
         ui.updateTextArea(11, die2)
         players[name].current = players[name].current + total
-        if players[name].current >= 40 then
+        if players[name].current > 40 then
             players[name].current = players[name].current - 40
+            players[name]:addMoney(2000)
         end
         players[name]:goTo(players[name].current)
         changeTurn()
+        print(tostring(players[name]))
     end
 end
