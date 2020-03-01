@@ -19,7 +19,6 @@ function eventNewGame()
         initCards()
 
         --giving the turn to the first player
-        players["King_seniru#5890"]:goTo(8)
         changeTurn()
    
     else

@@ -1,6 +1,6 @@
 function eventTextAreaCallback(id, name, evt)
     --dice rolling event
-    if evt == "roll" and name == current then
+    if evt == "roll" and name == currentPlayer then
         local die1 = math.random(1, 6)
         local die2 = math.random(1, 6)
         local total = die1 + die2

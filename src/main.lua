@@ -8,8 +8,25 @@ tfm.exec.disableMortCommand()
 function initCards()
     
     chances = {
-        Chance:new(1, "Do nothing", "This card is just a test", function(player) 
-            print("Do nothing " .. player.name)
+        Chance:new(1, "Speeding fine!", "Pay $150", function(player) 
+            print(1)
+            player:addMoney(-150)
+        end),
+        Chance:new(2, "Go back 3 spaces", "", function(player, land)
+            print(2)
+            player:goTo((land.landIndex - 3) < 1 and 40 - land.landIndex - 3 or land.landIndex - 3)
+        end),
+        Chance:new(3, "Chance", "Bank pays you dividend of $500", function(player)
+            print(3)
+            player:addMoney(500)
+        end),
+        Chance:new(4, "Drunk in Charge", "Fine $200", function(player)
+            print(4)
+            player:addMoney(-200)
+        end),
+        Chance:new(5, "Collect $1000", "You have won a fanart competition", function(player)
+            print(5)
+            player:addMoney(1000)
         end)
     }
 
@@ -18,6 +35,10 @@ function initCards()
             print("Do nothing " .. player.name)
         end)
     }
+
+    --shuffling the cards
+    shuffle(chances)
+    shuffle(communityChests)
 
 end
 
@@ -69,18 +90,46 @@ function initLands()
     lands[39] = Land{39, "Super Tax", isSpecial = true}
     lands[40] = Land{40, "Temple", price = 4000, color = "dark blue", landRent = 500, house1Rent = 2000, house2Rent = 6000, house3Rent = 14000, house4Rent = 17000, hotelRent = 20000, buildCost = 2000}
     
+    local chanceFn = function(land, player)
+        local curr = currentChance
+        local next = getNext(chances, curr)
+        chances[next]:action(player, land)
+        ui.addTextArea(12000, "Chance: " .. chances[next].header .. "<br>" .. chances[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        currentChance = next
+    end
+
+    local commChestFn = function(land, player)
+        local curr = currentCommunitychest
+        local next = getNext(communityChests, curr)
+        communityChests[next]:action(player, land)
+        ui.addTextArea(12000, "Community Chest: " .. communityChests[next].header .. "<br>" .. communityChests[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        currentChance = next
+    end
+    
     --overriding the behaviours of special lands
-    lands[3].onLand = function(self, player)
-        --community chest
-        communityChests[1]:action(player)
+
+    lands[3].onLand = function(self, player) --community chest
+        commChestFn(self, player)
     end
 
-    lands[8].onLand = function(self, player)
-        chances[1]:action(player)
+    lands[8].onLand = function(self, player) --chance
+        chanceFn(self, player)
     end
 
-    lands[18].onLand = function(self, player)
-        communityChests[1]:action(player)
+    lands[18].onLand = function(self, player) --community chest
+        commChestFn(self, player)
+    end
+
+    lands[23].onLand = function(self, player) --chance
+        chanceFn(self, player)
+    end
+
+    lands[34].onLand = function(self, player) --community chest
+        commChestFn(self, player)
+    end
+
+    lands[37].onLand = function(self, player)
+        commChestFn(self, player)
     end
 
     displayLands()
@@ -93,17 +142,17 @@ function displayLands(target)
     end
 end
 
-function getNext(current)
-    return next(players, current) or next(players)
+function getNext(tbl, current)
+    return next(tbl, current) or next(tbl)
 end
 
 function changeTurn()
-    local curr = current
-    local next = getNext(curr)
+    local curr = currentPlayer
+    local next = getNext(players, currentPlayer)
     print(next)
     ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
     ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
-    current = next
+    currentPlayer = next
 end
 
 function setUI(target)
