@@ -365,8 +365,8 @@ function initLands()
         commChestFn(self, player)
     end
 
-    lands[37].onLand = function(self, player)
-        commChestFn(self, player)
+    lands[37].onLand = function(self, player) --chance
+        chanceFn(self, player)
     end
 
     displayLands()
