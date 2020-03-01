@@ -16,7 +16,7 @@ local lobby = [[<C><P /><Z><S><S X="401" Y="396" T="0" L="804" H="20" P="0,0,0.3
 local points, players, lands, chances, communityChests = {}, {}, {}, {}, {}
 local gameStarted = false
 local totalPlayers = 0
-local current = nil
+local currentPlayer, currentChance, currentCommunityChest
 
 --Timers4TFm
 local a={}a.__index=a;a._timers={}a._init=false;a._clock=0;setmetatable(a,{__call=function(b,...)return b.new(...)end})function a.init(c)if not a._init then a._init=true;a._clock=c end end;function a.process(d)a._clock=d;for e,f in next,a._timers do if f:isAlive()and f:getMatureTime()<=a._clock then f:call()if f.loop then f:reset()else f:kill()end end end end;function a.run(d)a.init(d)a.process(d)end;function a.new(g,h,i,j,...)local self=setmetatable({},a)self.id=g;self.callback=h;self.timeout=i;self.mature=a._clock+i;self.loop=j;self.args={...}self.alive=true;a._timers[g]=self;return self end;function a:getId()return self.id end;function a:getTimeout()return self.timeout end;function a:isLooping()return self.loop end;function a:getMatureTime()return self.mature end;function a:isAlive()return self.alive end;function a:setCallback(k)self.callback=k end;function a:addTime(c)self.mature=self.mature+c end;function a:setLoop(j)self.loop=j end;function a:setArgs(...)self.args={...}end;function a:call()self.callback(table.unpack(self.args))end;function a:kill()self.alive=false;self=nil end;function a:reset()self.mature=a._clock+self.timeout end;Timer=a
@@ -224,6 +224,14 @@ function split(s, delimiter)
     return result;
 end
 
+function shuffle(tbl)
+    math.randomseed(os.time())
+    for i = 1, #tbl do
+        local j = math.random(i)
+        tbl[i], tbl[j] = tbl[j], tbl[i]
+    end
+end
+
 
 --==[[ main ]]==--
 
@@ -237,8 +245,25 @@ tfm.exec.disableMortCommand()
 function initCards()
     
     chances = {
-        Chance:new(1, "Do nothing", "This card is just a test", function(player) 
-            print("Do nothing " .. player.name)
+        Chance:new(1, "Speeding fine!", "Pay $150", function(player) 
+            print(1)
+            player:addMoney(-150)
+        end),
+        Chance:new(2, "Go back 3 spaces", "", function(player, land)
+            print(2)
+            player:goTo((land.landIndex - 3) < 1 and 40 - land.landIndex - 3 or land.landIndex - 3)
+        end),
+        Chance:new(3, "Chance", "Bank pays you dividend of $500", function(player)
+            print(3)
+            player:addMoney(500)
+        end),
+        Chance:new(4, "Drunk in Charge", "Fine $200", function(player)
+            print(4)
+            player:addMoney(-200)
+        end),
+        Chance:new(5, "Collect $1000", "You have won a fanart competition", function(player)
+            print(5)
+            player:addMoney(1000)
         end)
     }
 
@@ -247,6 +272,10 @@ function initCards()
             print("Do nothing " .. player.name)
         end)
     }
+
+    --shuffling the cards
+    shuffle(chances)
+    shuffle(communityChests)
 
 end
 
@@ -298,18 +327,46 @@ function initLands()
     lands[39] = Land{39, "Super Tax", isSpecial = true}
     lands[40] = Land{40, "Temple", price = 4000, color = "dark blue", landRent = 500, house1Rent = 2000, house2Rent = 6000, house3Rent = 14000, house4Rent = 17000, hotelRent = 20000, buildCost = 2000}
     
+    local chanceFn = function(land, player)
+        local curr = currentChance
+        local next = getNext(chances, curr)
+        chances[next]:action(player, land)
+        ui.addTextArea(12000, "Chance: " .. chances[next].header .. "<br>" .. chances[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        currentChance = next
+    end
+
+    local commChestFn = function(land, player)
+        local curr = currentCommunitychest
+        local next = getNext(communityChests, curr)
+        communityChests[next]:action(player, land)
+        ui.addTextArea(12000, "Community Chest: " .. communityChests[next].header .. "<br>" .. communityChests[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        currentChance = next
+    end
+    
     --overriding the behaviours of special lands
-    lands[3].onLand = function(self, player)
-        --community chest
-        communityChests[1]:action(player)
+
+    lands[3].onLand = function(self, player) --community chest
+        commChestFn(self, player)
     end
 
-    lands[8].onLand = function(self, player)
-        chances[1]:action(player)
+    lands[8].onLand = function(self, player) --chance
+        chanceFn(self, player)
     end
 
-    lands[18].onLand = function(self, player)
-        communityChests[1]:action(player)
+    lands[18].onLand = function(self, player) --community chest
+        commChestFn(self, player)
+    end
+
+    lands[23].onLand = function(self, player) --chance
+        chanceFn(self, player)
+    end
+
+    lands[34].onLand = function(self, player) --community chest
+        commChestFn(self, player)
+    end
+
+    lands[37].onLand = function(self, player)
+        commChestFn(self, player)
     end
 
     displayLands()
@@ -322,17 +379,17 @@ function displayLands(target)
     end
 end
 
-function getNext(current)
-    return next(players, current) or next(players)
+function getNext(tbl, current)
+    return next(tbl, current) or next(tbl)
 end
 
 function changeTurn()
-    local curr = current
-    local next = getNext(curr)
+    local curr = currentPlayer
+    local next = getNext(players, currentPlayer)
     print(next)
     ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
     ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
-    current = next
+    currentPlayer = next
 end
 
 function setUI(target)
@@ -381,7 +438,6 @@ function eventNewGame()
         initCards()
 
         --giving the turn to the first player
-        players["King_seniru#5890"]:goTo(8)
         changeTurn()
    
     else
@@ -420,7 +476,7 @@ function eventPlayerLeft(name)
 end
 function eventTextAreaCallback(id, name, evt)
     --dice rolling event
-    if evt == "roll" and name == current then
+    if evt == "roll" and name == currentPlayer then
         local die1 = math.random(1, 6)
         local die2 = math.random(1, 6)
         local total = die1 + die2
