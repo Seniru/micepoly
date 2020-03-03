@@ -9,25 +9,93 @@ function initCards()
     
     chances = {
         Chance:new(1, "Speeding fine!", "Pay $150", function(player) 
-            print(1)
             player:addMoney(-150)
         end),
         Chance:new(2, "Go back 3 spaces", "", function(player, land)
-            print(2)
             player:goTo((land.landIndex - 3) < 1 and 40 - land.landIndex - 3 or land.landIndex - 3)
         end),
         Chance:new(3, "Chance", "Bank pays you dividend of $500", function(player)
-            print(3)
             player:addMoney(500)
         end),
         Chance:new(4, "Drunk in Charge", "Fine $200", function(player)
-            print(4)
             player:addMoney(-200)
         end),
         Chance:new(5, "Collect $1000", "You have won a fanart competition", function(player)
-            print(5)
             player:addMoney(1000)
+        end),
+        Chance:new(6, "Receive $1500", "Your building loan has matured", function(player)
+            player:addMoney(1500)
+        end),
+        Chance:new(7, "You were assessed for street repairs", "\t$400 per house\n\t$1150 per hotel", function(player)
+            --todo: implementing this after supporting houses
+            player:addMoney(0)
+        end),
+        Chance:new(8, "Take a trip to Elisah`s teleporter station", "Collect $2000 if you pass `GO`!", function(player, land)
+            -- check if a player has to pass GO to move to Elisa's teleporter
+            if land.landIndex > 26 then
+                player:addMoney(2000)
+            end
+            player:goTo(26) -- going to elisah's teleporter station
+        end),
+        Chance:new(9, "Pay school fees", "Pay school fees of $1500", function(player)
+            player:addMoney(-1500)
+        end),
+        Chance:new(10, "Visit to King Fromagnus`s Castle", "Collect $2000 if you pass `GO`!", function(player, land)
+            -- check if a player has to pass Go to move to the castle
+            if land.landIndex > 17 then
+                player:addMoney(2000)
+            end
+            player:goTo(17) -- going to king fromagnus's castle
+        end),
+        Chance:new(11, "Make general repairs on all of your houses", "\t$250 for each houses\n\t$1000 for each hotel", function(player)
+            --todo: implement this after supporting houses
+            print("Not implemented")
+        end),
+        Chance:new(12, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
+            --todo: implement this correctly after building the true jail
+            player:goTo(11)
+        end),
+        Chance:new(13, "Advance to Buffy`s Residence", "", function(player)
+            player:goTo(2) -- Going to buffy's residence
+        end),
+        Chance:new(14, "Advance to Chez Gustave!", "", function(player)
+            player:goTo(24) -- Going to cheze gustave
+        end),
+        Chance:new(15, "Troll!", "", function(player)
+            tfm.exec.chatMessage("Troll :P", player.name)
+        end),
+        Chance:new(16, "Hunger!", "Pay $50 to eat and prevent you from dying!", function(player)
+            player:addMoney(-50)
+        end),
+        Chance:new(17, "$50 Reward!", "Like our post in forum!", function(player)
+            --todo: add the forum link
+            tfm.exec.chatMessage("Like our post in forum\nLink: https://123456.com")
+            player:addMoney(50)
+        end),
+        Chance:new(18, "AFK Death", "Pay $20 to revive!", function(player)
+            player:addMoney(-20)
+        end),
+        Chance:new(19, "It`s Money!", "Every player get $500", function()
+            for name, player in next, players do
+                player:addMoney(500)
+            end
+            tfm.exec.chatMessage("You got $500 as a gift!")
+        end),
+        Chance:new(20, "It`s your birthday!", "Collect $200 from each player", function(player)
+            tfm.exec.chatMessage("It's " .. player.name .. "'s Birthday! Give him a present of $200")
+            for _, p in next, players do
+                p:addMoney(-200)
+                player:addMoney(200)
+            end
+        end),
+        Chance:new(22, "Pay $2000", "Pay $2000 for your utility bills", function(player)
+            player:addMoney(-2000)
+        end),
+        Chance:new(23, "You won a lottery!", "Collect $2500", function(player)
+            player:addMoney(2500
+        )
         end)
+        --todo: Add the get out of the jail card after implementing the jail and related featuress
     }
 
     communityChests = {
