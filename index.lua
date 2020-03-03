@@ -126,10 +126,10 @@ function Player:goTo(land)
         changeTurn()
     else
         if not landObj.owner then
-            ui.addTextArea(11000, "Buy or bid? --bid not supported--", self.name, 300, 100, 100, 100, nil, nil, 1, true)
+            ui.addTextArea(11000, "Buy or Auction? --Auction not supported--", self.name, 300, 100, 100, 100, nil, nil, 1, true)
             ui.addTextArea(11001, "<a href='event:buy:" .. landObj.landIndex .. "'>Buy</a>", self.name, 300, 250, 50, 50, nil, nil, 1, true)
             --todo: Implement the bid functionality and change the link text
-            ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Bid</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
+            ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Auction</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
         else
             self:addMoney(-landObj.landRent)
             players[landObj.owner]:addMoney(landObj.landRent)
@@ -140,6 +140,11 @@ end
 
 function Player:addMoney(amount)
     self.money = self.money + amount
+    self:updateStatsBar()
+end
+
+function Player:updateStatsBar()
+    ui.updateTextArea(13, "Money: $" .. self.money, self.name)
 end
 
 --[[ Land class ]]
@@ -230,6 +235,10 @@ function shuffle(tbl)
         local j = math.random(i)
         tbl[i], tbl[j] = tbl[j], tbl[i]
     end
+end
+
+function getNext(tbl, current)
+    return next(tbl, current) or next(tbl)
 end
 
 
@@ -379,10 +388,6 @@ function displayLands(target)
     end
 end
 
-function getNext(tbl, current)
-    return next(tbl, current) or next(tbl)
-end
-
 function changeTurn()
     local curr = currentPlayer
     local next = getNext(players, currentPlayer)
@@ -399,6 +404,8 @@ function setUI(target)
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
     ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
+    -- stats
+    ui.addTextArea(13, "Money: $15000", target, 780, 200, 100, 50, nil, nil, 1, true)
 end
 
 function showLandInfo(id, target)
