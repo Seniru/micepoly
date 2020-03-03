@@ -5,6 +5,8 @@ tfm.exec.disableAfkDeath()
 tfm.exec.disableAutoShaman()
 tfm.exec.disableMortCommand()
 
+tfm.exec.setRoomMaxPlayers(15)
+
 function initCards()
     
     chances = {
@@ -99,9 +101,87 @@ function initCards()
     }
 
     communityChests = {
-        CommunityChest:new(1, "Do nothing", "This card is just a test", function(player) 
-            print("Do nothing " .. player.name)
+        CommunityChest:new(1, "Receive $250", "Receive interest on 7% preference shares of $250", function(player) 
+            player:addMoney(250)
+        end),
+        CommunityChest:new(2, "Collect $1000", "You have won 2nd price in a fashion squad competition", function(player)
+            player:addMoney(250)
+        end),
+        CommunityChest:new(3, "Pay $1000", "Pay your insurance premium of $1000", function(player)
+            player:addMoney(-1000)
+        end),
+        CommunityChest:new(4, "Collect $200", "Income tax refund", function(player)
+            player:addMoney(-200)
+        end),
+        CommunityChest:new(5, "Collect $2000", "Bank error in your favour", function(player)
+            player:addMoney(2000)
+        end),
+        CommunityChest:new(6, "Pay $1000", "Pay $1000 to the hospital", function(player)
+            player:addMoney(-1000)
+        end),
+        CommunityChest:new(7, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
+            --todo: implement this correctly after building the true jail
+            player:goTo(11)
+        end),
+        CommunityChest:new(8, "It`s your birthday!", "Collect $100 from each player", function(player)
+            tfm.exec.chatMessage("It's " .. player.name .. "'s Birthday! Give him a present of $200")
+            for _, p in next, players do
+                p:addMoney(-200)
+                player:addMoney(200)
+            end
+        end),
+        CommunityChest:new(9, "Trick or Treat?", "Pay a fine of $100 or take a chance", function(player)
+            --todo: implement this correctly
+            tfm.exec.chatMessage("Not implemented correclty! No effect because of that", player.name)
+        end),
+        CommunityChest:new(10, "You inherit $1000", "", function(player)
+            player:addMoney(1000)
+        end),
+        CommunityChest:new(11, "Pay $500", "Doctor`s fee", function(player)
+            player:addMoney(-500)
+        end),
+        CommunityChest:new(12, "Receive $500", "From Sale of stock you got $500", function(player)
+            player:addMoney(500)
+        end),
+        CommunityChest:new(13, "Go back to Transformice Museum", "", function(player)
+            player:goTo(4) -- Going to Transformice Museum
+        end),
+        CommunityChest:new(14, "Annuity matures", "Collect $1000", function(player)
+            player:addMoney(1000)
+        end),
+        CommunityChest:new(15, "Receive $500", "<i>Powered by Shaman</i>", function(player)
+            player:addMoney(500)
+        end),
+        CommunityChest:new(16, "Error occured in game!", "You received $1500", function(player)
+            player:addMoney(1500)
+            tfm.exec.chatMessage("Don't forget to report actual bugs to the developer.\n<LINK HERE>", player.name)
+        end),
+        CommunityChest:new(17, "Trollol!", "", function(player)
+            tfm.exec.chatMessage("Trollol!!!", player.name)
+        end),
+        CommunityChest:new(18, "Pay $500", "Pay bank loan interest of $500", function(player)
+            player:addMoney(-500)
+        end),
+        CommunityChest:new(19, "Cheef's food!", "You got $250 for free", function(player)
+            player:addMoney(-250)
+        end),
+        CommunityChest:new(20, "Receive $1000", "Part time job salary", function(player)
+            player:addMoney(1000)
+        end),
+        CommunityChest:new(21, "Pay 500", "General repairs in your house", function(player)
+            player:addMoney(-500)
+        end),
+        CommunityChest:new(22, "Cheese farming event!", "You farmed $250 in 1 hour", function(player)
+            player:addMoney(250)
+        end),
+        CommunityChest:new(23, "Go back 5 spaces", "", function(player, land)
+            player:goTo((land.landIndex - 5) < 1 and 40 - land.landIndex - 5 or land.landIndex - 5)
+        end),
+        CommunityChest:new(24, "Let`s gamble!", "Place your bet", function(player)
+            --todo: implement this
+            tfm.exec.chatMessage("Not implemented!", player.name)
         end)
+        --todo: Add the get out of the jail card after implementing the jail and related featuress
     }
 
     --shuffling the cards
@@ -171,7 +251,7 @@ function initLands()
         local next = getNext(communityChests, curr)
         communityChests[next]:action(player, land)
         ui.addTextArea(12000, "Community Chest: " .. communityChests[next].header .. "<br>" .. communityChests[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
-        currentChance = next
+        currentCommunitychest = next
     end
     
     --overriding the behaviours of special lands
