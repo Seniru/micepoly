@@ -142,10 +142,6 @@ function displayLands(target)
     end
 end
 
-function getNext(tbl, current)
-    return next(tbl, current) or next(tbl)
-end
-
 function changeTurn()
     local curr = currentPlayer
     local next = getNext(players, currentPlayer)
@@ -162,6 +158,8 @@ function setUI(target)
     ui.addTextArea(11, "-", target, 780, 50, 50, 50, nil, nil, 1, true)
     -- roll button
     ui.addTextArea(12, "<N2>Roll!</N2>", target, 720, 120, 200, 30, nil, nil, 1, true)
+    -- stats
+    ui.addTextArea(13, "Money: $15000", target, 780, 200, 100, 50, nil, nil, 1, true)
 end
 
 function showLandInfo(id, target)

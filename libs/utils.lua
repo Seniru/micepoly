@@ -13,3 +13,7 @@ function shuffle(tbl)
         tbl[i], tbl[j] = tbl[j], tbl[i]
     end
 end
+
+function getNext(tbl, current)
+    return next(tbl, current) or next(tbl)
+end
