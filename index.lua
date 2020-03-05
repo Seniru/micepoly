@@ -18,6 +18,20 @@ local gameStarted = false
 local totalPlayers = 0
 local currentPlayer, currentChance, currentCommunityChest
 
+--table to store lands of same category
+local landCategories = {
+    ["teleporter"] = {6, 16, 26, 36},
+    ["factory"] = {13, 29},
+    ["purple"] = {2, 4},
+    ["light blue"] = {7, 9, 10},
+    ["magneta"] = {11, 14, 15},
+    ["orange"] = {17, 19, 20},
+    ["red"] = {22, 24, 25},
+    ["yellow"] = {27, 28, 30},
+    ["green"] = {32, 33, 35},
+    ["dark blue"] = {38, 40}
+}
+
 --Timers4TFm
 local a={}a.__index=a;a._timers={}a._init=false;a._clock=0;setmetatable(a,{__call=function(b,...)return b.new(...)end})function a.init(c)if not a._init then a._init=true;a._clock=c end end;function a.process(d)a._clock=d;for e,f in next,a._timers do if f:isAlive()and f:getMatureTime()<=a._clock then f:call()if f.loop then f:reset()else f:kill()end end end end;function a.run(d)a.init(d)a.process(d)end;function a.new(g,h,i,j,...)local self=setmetatable({},a)self.id=g;self.callback=h;self.timeout=i;self.mature=a._clock+i;self.loop=j;self.args={...}self.alive=true;a._timers[g]=self;return self end;function a:getId()return self.id end;function a:getTimeout()return self.timeout end;function a:isLooping()return self.loop end;function a:getMatureTime()return self.mature end;function a:isAlive()return self.alive end;function a:setCallback(k)self.callback=k end;function a:addTime(c)self.mature=self.mature+c end;function a:setLoop(j)self.loop=j end;function a:setArgs(...)self.args={...}end;function a:call()self.callback(table.unpack(self.args))end;function a:kill()self.alive=false;self=nil end;function a:reset()self.mature=a._clock+self.timeout end;Timer=a
 
@@ -131,7 +145,7 @@ function Player:goTo(land)
             --todo: Implement the bid functionality and change the link text
             ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Auction</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
         else
-            self:addMoney(-landObj.landRent)
+            self:addMoney(-landObj:getRent())
             players[landObj.owner]:addMoney(landObj.landRent)
             changeTurn()
         end
@@ -194,8 +208,13 @@ function Land:setOwner(owner)
     if self.owner then
         error(self.name .. " already has an owner")
     else
-        players[owner]:addMoney(-self.price)
         self.owner = owner
+        if not players[owner].ownedLands[self.color] then
+            players[owner].ownedLands[self.color] = {self.landIndex}
+        else
+            table.insert(players[owner].ownedLands[self.color], self.landIndex)
+        end
+        players[owner]:addMoney(-self.price)
     end
 end
 
@@ -214,6 +233,20 @@ end
 function Land:addHotel()
     self.houses = 0
     self.hasHotel = true
+end
+
+function Land:getRent()
+    --checking if the player owns all the lands in that category
+    if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
+        if self.hasHotel then
+            return self.hotelRent
+        elseif self.houses > 0 then
+            return self["house" .. self.houses .. "Rent"]
+        else
+            return self.landRent * 2
+        end
+    end
+    return self.landRent
 end
 
 --[[@abstract method]]--
@@ -239,6 +272,22 @@ end
 
 function getNext(tbl, current)
     return next(tbl, current) or next(tbl)
+end
+
+function table.tostring(tbl, depth)
+    local res = "{"
+    for k, v in next, tbl do
+        if type(v) == "table" then
+            if depth == nil or depth > 0 then
+                res = res .. table.tostring(v, depth and depth - 1 or nil) .. ", "
+            else
+                res = res .. k .. ": {...}, "
+            end
+        else
+            res = res .. (type(k) == "number" and "" or k .. ":") .. tostring(v) .. ", "
+        end
+    end
+    return res:sub(1, res:len() - 2) .. "}"
 end
 
 
