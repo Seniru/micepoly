@@ -279,7 +279,7 @@ function table.tostring(tbl, depth)
     for k, v in next, tbl do
         if type(v) == "table" then
             if depth == nil or depth > 0 then
-                res = res .. table.tostring(v, depth and depth - 1 or nil) .. ", "
+                res = res .. (type(k) == "number" and "" or k .. ": ") .. table.tostring(v, depth and depth - 1 or nil) .. ", "
             else
                 res = res .. k .. ": {...}, "
             end
@@ -289,7 +289,6 @@ function table.tostring(tbl, depth)
     end
     return res:sub(1, res:len() - 2) .. "}"
 end
-
 
 --==[[ main ]]==--
 
