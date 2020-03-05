@@ -34,7 +34,7 @@ function Player:goTo(land)
             --todo: Implement the bid functionality and change the link text
             ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Auction</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
         else
-            self:addMoney(-landObj.landRent)
+            self:addMoney(-landObj:getRent())
             players[landObj.owner]:addMoney(landObj.landRent)
             changeTurn()
         end

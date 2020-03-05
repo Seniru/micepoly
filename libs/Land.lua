@@ -45,8 +45,13 @@ function Land:setOwner(owner)
     if self.owner then
         error(self.name .. " already has an owner")
     else
-        players[owner]:addMoney(-self.price)
         self.owner = owner
+        if not players[owner].ownedLands[self.color] then
+            players[owner].ownedLands[self.color] = {self.landIndex}
+        else
+            table.insert(players[owner].ownedLands[self.color], self.landIndex)
+        end
+        players[owner]:addMoney(-self.price)
     end
 end
 
@@ -65,6 +70,20 @@ end
 function Land:addHotel()
     self.houses = 0
     self.hasHotel = true
+end
+
+function Land:getRent()
+    --checking if the player owns all the lands in that category
+    if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
+        if self.hasHotel then
+            return self.hotelRent
+        elseif self.houses > 0 then
+            return self["house" .. self.houses .. "Rent"]
+        else
+            return self.landRent * 2
+        end
+    end
+    return self.landRent
 end
 
 --[[@abstract method]]--

@@ -17,3 +17,19 @@ end
 function getNext(tbl, current)
     return next(tbl, current) or next(tbl)
 end
+
+function table.tostring(tbl, depth)
+    local res = "{"
+    for k, v in next, tbl do
+        if type(v) == "table" then
+            if depth == nil or depth > 0 then
+                res = res .. table.tostring(v, depth and depth - 1 or nil) .. ", "
+            else
+                res = res .. k .. ": {...}, "
+            end
+        else
+            res = res .. (type(k) == "number" and "" or k .. ":") .. tostring(v) .. ", "
+        end
+    end
+    return res:sub(1, res:len() - 2) .. "}"
+end
