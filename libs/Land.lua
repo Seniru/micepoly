@@ -50,6 +50,8 @@ function Land:setOwner(owner)
             table.insert(players[owner].ownedLands[self.color], self.landIndex)
         end
         players[owner]:addMoney(-self.price)
+        --todo: make this more visible
+        ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
 end
 
@@ -58,6 +60,8 @@ function Land:addHouse()
         error("Can't build a house here")
     else
         self.houses = self.houses + 1
+        players[self.owner]:addMoney(-self.buildCost)
+        --todo: add the house token to the land
     end
 end
 

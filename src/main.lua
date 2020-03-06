@@ -340,10 +340,10 @@ function showLandInfo(id, target)
     --adding extra control buttons for land owners
     if land.owner == target then
         --todo: support the functionality of the buttons
-        ui.addTextArea(10001, "Add houses", target, 280, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10001, "<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>", target, 280, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10002, "Add hotels", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10004, "Sell", target, 460, 300, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
     end
 end
 

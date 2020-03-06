@@ -28,6 +28,12 @@ function eventTextAreaCallback(id, name, evt)
             ui.removeTextArea(11001, name)
             ui.removeTextArea(11002, name)
             changeTurn()
+        elseif key == "addHouse" then
+            local land = lands[tonumber(value)]
+
+            if land.houses < 4 then
+                land:addHouse()
+            end
         end
     end
 end
