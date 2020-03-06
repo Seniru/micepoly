@@ -11,7 +11,7 @@ combine({
     },
     map: {
         files: [
-            "src/map.xml"
+            "src/maps/map.xml"
         ],
         prefix: "local map = [[",
         suffix: "]]\n",
@@ -20,7 +20,7 @@ combine({
     },
     lobby: {
         files: [
-            "src/lobby.xml"
+            "src/maps/lobby.xml"
         ],
         prefix: "local lobby = [[",
         suffix: "]]\n",
