@@ -147,8 +147,9 @@ function Player:goTo(land)
             --todo: Implement the bid functionality and change the link text
             ui.addTextArea(11002, "<a href='event:buy:" .. landObj.landIndex .. "'>Auction</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
         else
-            self:addMoney(-landObj:getRent())
-            players[landObj.owner]:addMoney(landObj.landRent)
+            local rent = landObj:getRent()
+            self:addMoney(-rent)
+            players[landObj.owner]:addMoney(rent)
             changeTurn()
         end
     end
@@ -215,6 +216,8 @@ function Land:setOwner(owner)
             table.insert(players[owner].ownedLands[self.color], self.landIndex)
         end
         players[owner]:addMoney(-self.price)
+        --todo: make this more visible
+        ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
 end
 
@@ -223,6 +226,8 @@ function Land:addHouse()
         error("Can't build a house here")
     else
         self.houses = self.houses + 1
+        players[self.owner]:addMoney(-self.buildCost)
+        --todo: add the house token to the land
     end
 end
 
@@ -635,10 +640,10 @@ function showLandInfo(id, target)
     --adding extra control buttons for land owners
     if land.owner == target then
         --todo: support the functionality of the buttons
-        ui.addTextArea(10001, "Add houses", target, 280, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10001, "<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>", target, 280, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10002, "Add hotels", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10004, "Sell", target, 460, 300, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
     end
 end
 
@@ -756,6 +761,12 @@ function eventTextAreaCallback(id, name, evt)
             ui.removeTextArea(11001, name)
             ui.removeTextArea(11002, name)
             changeTurn()
+        elseif key == "addHouse" then
+            local land = lands[tonumber(value)]
+
+            if land.houses < 4 then
+                land:addHouse()
+            end
         end
     end
 end
