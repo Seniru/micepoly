@@ -1,9 +1,9 @@
 function split(s, delimiter)
-    result = {};
+    result = {}
     for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
-        table.insert(result, match);
+        table.insert(result, match)
     end
-    return result;
+    return result
 end
 
 function shuffle(tbl)
@@ -20,16 +20,20 @@ end
 
 function table.tostring(tbl, depth)
     local res = "{"
+    local prev = 0
     for k, v in next, tbl do
         if type(v) == "table" then
             if depth == nil or depth > 0 then
-                res = res .. (type(k) == "number" and "" or k .. ": ") .. table.tostring(v, depth and depth - 1 or nil) .. ", "
+                res =
+                    res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") ..
+                    table.tostring(v, depth and depth - 1 or nil) .. ", "
             else
                 res = res .. k .. ": {...}, "
             end
         else
-            res = res .. (type(k) == "number" and "" or k .. ":") .. tostring(v) .. ", "
+            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") .. tostring(v) .. ", "
         end
+        prev = type(k) == "number" and k or nil
     end
     return res:sub(1, res:len() - 2) .. "}"
 end
