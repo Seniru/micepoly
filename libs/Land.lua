@@ -22,6 +22,7 @@ function Land.new(data)
     self.hasHotel = false
     self.owner = nil
     self.onland = nil
+    self.isMortgaged = false
 
     self.landRent = data.landRent
     self.houseRents = data.houseRents

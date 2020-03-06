@@ -312,13 +312,61 @@ end
 
 function showLandInfo(id, target)
     local land = lands[id]
-    local res = land.name ..
-        "\nPrice: " .. (land.price or "0")..
-        "\nOwner:" .. (land.owner or "NA")
-    
-    ui.addTextArea(10000, res, target, 300, 100, 300, 200, nil, nil, 1, true)
+    print(table.tostring(land))
+    local res = closeBtn .. land.name
+
+    if land.isSpecial then
+        --todo
+    else    
+        if land.color == "factory" then
+            --todo
+        elseif land.color == "teleporter" then
+            --todo
+        else
+            res = res .. " <i>(" .. land.color .. ")</i>" ..
+                "\nPrice: " .. (land.price or "0") ..
+                "\nOwner:" .. (land.owner or "NA") ..
+                "\nLand rent: " .. (land.landRent or "NA") ..
+                "\nWith 1 house: " .. (land.houseRents[1] or "NA") ..
+                "\nWith 2 houses: " .. (land.houseRents[2] or "NA") ..
+                "\nWith 3 houses: " .. (land.houseRents[3] or "NA") ..
+                "\nWith 4 houses: " .. (land.houseRents[4] or "NA") ..
+                "\nHotel rent: " .. (land.hotelRent or "NA") ..
+                "\n<i>Mortgaged: " .. tostring(land.isMortgaged)
+        end
+    end
+
+    ui.addTextArea(10000, res, target, 280, 100, 300, 200, nil, nil, 1, true)
+    --adding extra control buttons for land owners
+    if land.owner == target then
+        --todo: support the functionality of the buttons
+        ui.addTextArea(10001, "Add houses", target, 280, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10002, "Add hotels", target, 340, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10004, "Sell", target, 460, 300, 60, 40, nil, nil, 1, true)
+    end
+end
+
+function handleCloseBtn(id, name)
+    local closeSequence = {
+        [10000] = {10000, 10001, 10002, 10003, 10004, 1000}
+    }
+    if closeSequence[id] then
+        for _, id in next, closeSequence[id] do
+            ui.removeTextArea(id, name)
+        end
+    else
+        ui.removeTextArea(id, name)
+    end
 end
 
 function main()
     tfm.exec.newGame(lobby)
+end
+
+
+function eventChatCommand(name, cmd)
+    if cmd:sub(1, 1) == "g" then
+        players[name]:goTo(tonumber(cmd:sub(2, 2)))
+    end
 end

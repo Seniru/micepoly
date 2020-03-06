@@ -13,6 +13,8 @@ function eventTextAreaCallback(id, name, evt)
         end
         players[name]:goTo(players[name].current)
         print(tostring(players[name]))
+    elseif evt == "close" then
+        handleCloseBtn(id, name)
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))

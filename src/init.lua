@@ -4,6 +4,8 @@ local gameStarted = false
 local totalPlayers = 0
 local currentPlayer, currentChance, currentCommunityChest
 
+local  closeBtn = "<p align='right'><R><b><a href='event:close'>X</a></b></R></p>"
+
 --table to store lands of same category
 local landCategories = {
     ["teleporter"] = {6, 16, 26, 36},
