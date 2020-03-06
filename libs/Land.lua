@@ -24,10 +24,7 @@ function Land.new(data)
     self.onland = nil
 
     self.landRent = data.landRent
-    self.house1Rent = data.house1Rent
-    self.house2Rent = data.house2Rent
-    self.house3Rent = data.house3Rent
-    self.house4Rent = data.house4Rent
+    self.houseRents = data.houseRents
     self.hotelRent = data.hotelRent
     self.buildCost = data.buildCost
 
@@ -78,7 +75,7 @@ function Land:getRent()
         if self.hasHotel then
             return self.hotelRent
         elseif self.houses > 0 then
-            return self["house" .. self.houses .. "Rent"]
+            return self.houseRents[self.houses]
         else
             return self.landRent * 2
         end
