@@ -33,9 +33,11 @@ function eventTextAreaCallback(id, name, evt)
             if land.houses < 4 then
                 land:addHouse()
             end
+            showLandInfo(land.landIndex, name)
         elseif key == "addHotel" then
             local land = lands[tonumber(value)]
             land:addHotel()
+            showLandInfo(land.landIndex, name)
         end
     end
 end

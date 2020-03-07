@@ -55,7 +55,7 @@ function Land:setOwner(owner)
         end
         players[owner]:addMoney(-self.price)
         --todo: make this more visible
-        ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
+        --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
 end
 
@@ -99,6 +99,34 @@ function Land:getRent()
         end
     end
     return self.landRent
+end
+
+function Land:canBuild(building)
+    --todo: refactor this nested code
+    if self.hasHotel then
+        return false
+    elseif building == "house" then
+        for cat, land in next, landCategories[self.color] do
+            local land = lands[land]
+            if land.landIndex ~= self.landIndex and (land.owner ~= self.owner or (land.houses < self.houses)) then
+                return false
+            end
+        end
+        return true
+    elseif building == "hotel" then
+        if self.houses < 4 then
+            return false
+        end
+        for cat, land in next, landCategories[self.color] do
+            local land = lands[land]
+            if land.hasHotel then
+                return true
+            elseif land.houses ~= 4 then
+                return false
+            end
+        end
+        return true
+    end
 end
 
 --[[@abstract method]]--
