@@ -26,7 +26,7 @@ local landCategories = {
     ["factory"] = {13, 29},
     ["purple"] = {2, 4},
     ["light blue"] = {7, 9, 10},
-    ["magenta"] = {11, 14, 15},
+    ["magenta"] = {12, 14, 15},
     ["orange"] = {17, 19, 20},
     ["red"] = {22, 24, 25},
     ["yellow"] = {27, 28, 30},
@@ -221,7 +221,7 @@ function Land:setOwner(owner)
         end
         players[owner]:addMoney(-self.price)
         --todo: make this more visible
-        ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
+        --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
 end
 
@@ -265,6 +265,34 @@ function Land:getRent()
         end
     end
     return self.landRent
+end
+
+function Land:canBuild(building)
+    --todo: refactor this nested code
+    if self.hasHotel then
+        return false
+    elseif building == "house" then
+        for cat, land in next, landCategories[self.color] do
+            local land = lands[land]
+            if land.landIndex ~= self.landIndex and (land.owner ~= self.owner or (land.houses < self.houses)) then
+                return false
+            end
+        end
+        return true
+    elseif building == "hotel" then
+        if self.houses < 4 then
+            return false
+        end
+        for cat, land in next, landCategories[self.color] do
+            local land = lands[land]
+            if land.hasHotel then
+                return true
+            elseif land.houses ~= 4 then
+                return false
+            end
+        end
+        return true
+    end
 end
 
 --[[@abstract method]]--
@@ -611,7 +639,6 @@ end
 function changeTurn()
     local curr = currentPlayer
     local next = getNext(players, currentPlayer)
-    print(next)
     ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
     ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
     currentPlayer = next
@@ -630,7 +657,6 @@ end
 
 function showLandInfo(id, target)
     local land = lands[id]
-    print(table.tostring(land))
     local res = closeBtn .. land.name
 
     if land.isSpecial then
@@ -658,8 +684,8 @@ function showLandInfo(id, target)
     --adding extra control buttons for land owners
     if land.owner == target then
         --todo: support the functionality of the buttons
-        ui.addTextArea(10001, "<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>", target, 280, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10002, "<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>", target, 340, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10001, land:canBuild("house") and ("<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>") or "<N2>Add houses</N2>", target, 280, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
     end
@@ -805,9 +831,11 @@ function eventTextAreaCallback(id, name, evt)
             if land.houses < 4 then
                 land:addHouse()
             end
+            showLandInfo(land.landIndex, name)
         elseif key == "addHotel" then
             local land = lands[tonumber(value)]
             land:addHotel()
+            showLandInfo(land.landIndex, name)
         end
     end
 end
