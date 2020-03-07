@@ -25,13 +25,14 @@ function table.tostring(tbl, depth)
         if type(v) == "table" then
             if depth == nil or depth > 0 then
                 res =
-                    res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") ..
-                    table.tostring(v, depth and depth - 1 or nil) .. ", "
+                    res ..
+                    ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") ..
+                        table.tostring(v, depth and depth - 1 or nil) .. ", "
             else
-                res = res .. k .. ": {...}, "
+                res = res .. k .. ":  {...}, "
             end
         else
-            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") .. tostring(v) .. ", "
+            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") .. tostring(v) .. ", "
         end
         prev = type(k) == "number" and k or nil
     end

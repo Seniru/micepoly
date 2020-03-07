@@ -32,7 +32,8 @@ function eventNewGame()
 
         --initializing the players
         for name, player in next, tfm.get.room.playerList do
-            players[name] = Player(name) 
+            players[name] = Player(name)
+            --tfm.exec.killPlayer(name)
         end
 
         --initializing lands and cards

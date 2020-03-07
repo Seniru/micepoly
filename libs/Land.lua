@@ -31,6 +31,10 @@ function Land.new(data)
 
     self.locX = points[self.landIndex].x
     self.locY = points[self.landIndex].y
+    self.isInHorizon = 
+        (self.landIndex >= 1 and self.landIndex <= 11) or 
+        (self.landIndex >= 21 and self.landIndex <= 31)
+    self.isInOpposite = (self.landIndex >= 21 and self.landIndex <= 40)
 
     return self
 end
@@ -67,12 +71,20 @@ function Land:addHouse()
 end
 
 function Land:removeHouse()
+    ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
     self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
 end
 
 function Land:addHotel()
-    self.houses = 0
-    self.hasHotel = true
+    if not self.hasHotel and self.houses == 4 then
+        for i=1, 4 do
+            self:removeHouse()
+        end
+        local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
+        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, true)
+        self.hasHotel = true
+        players[self.owner]:addMoney(-self.buildCost)
+    end
 end
 
 function Land:getRent()

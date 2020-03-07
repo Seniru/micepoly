@@ -30,10 +30,12 @@ function eventTextAreaCallback(id, name, evt)
             changeTurn()
         elseif key == "addHouse" then
             local land = lands[tonumber(value)]
-
             if land.houses < 4 then
                 land:addHouse()
             end
+        elseif key == "addHotel" then
+            local land = lands[tonumber(value)]
+            land:addHotel()
         end
     end
 end

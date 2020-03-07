@@ -8,7 +8,7 @@ tfm.exec.disableMortCommand()
 tfm.exec.setRoomMaxPlayers(15)
 
 function initCards()
-    
+
     chances = {
         Chance:new(1, "Speeding fine!", "Pay $150", function(player) 
             player:addMoney(-150)
@@ -341,7 +341,7 @@ function showLandInfo(id, target)
     if land.owner == target then
         --todo: support the functionality of the buttons
         ui.addTextArea(10001, "<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>", target, 280, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10002, "Add hotels", target, 340, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10002, "<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
     end
@@ -364,9 +364,8 @@ function main()
     tfm.exec.newGame(lobby)
 end
 
-
 function eventChatCommand(name, cmd)
     if cmd:sub(1, 1) == "g" then
-        players[name]:goTo(tonumber(cmd:sub(2, 2)))
+        players[name]:goTo(tonumber(cmd:sub(2)))
     end
 end
