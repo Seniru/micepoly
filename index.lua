@@ -26,7 +26,7 @@ local landCategories = {
     ["factory"] = {13, 29},
     ["purple"] = {2, 4},
     ["light blue"] = {7, 9, 10},
-    ["magneta"] = {11, 14, 15},
+    ["magenta"] = {11, 14, 15},
     ["orange"] = {17, 19, 20},
     ["red"] = {22, 24, 25},
     ["yellow"] = {27, 28, 30},
@@ -197,6 +197,10 @@ function Land.new(data)
 
     self.locX = points[self.landIndex].x
     self.locY = points[self.landIndex].y
+    self.isInHorizon = 
+        (self.landIndex >= 1 and self.landIndex <= 11) or 
+        (self.landIndex >= 21 and self.landIndex <= 31)
+    self.isInOpposite = (self.landIndex >= 21 and self.landIndex <= 40)
 
     return self
 end
@@ -233,12 +237,20 @@ function Land:addHouse()
 end
 
 function Land:removeHouse()
+    ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
     self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
 end
 
 function Land:addHotel()
-    self.houses = 0
-    self.hasHotel = true
+    if not self.hasHotel and self.houses == 4 then
+        for i=1, 4 do
+            self:removeHouse()
+        end
+        local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
+        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, true)
+        self.hasHotel = true
+        players[self.owner]:addMoney(-self.buildCost)
+    end
 end
 
 function Land:getRent()
@@ -287,13 +299,14 @@ function table.tostring(tbl, depth)
         if type(v) == "table" then
             if depth == nil or depth > 0 then
                 res =
-                    res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") ..
-                    table.tostring(v, depth and depth - 1 or nil) .. ", "
+                    res ..
+                    ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") ..
+                        table.tostring(v, depth and depth - 1 or nil) .. ", "
             else
-                res = res .. k .. ": {...}, "
+                res = res .. k .. ":  {...}, "
             end
         else
-            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ":") .. tostring(v) .. ", "
+            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") .. tostring(v) .. ", "
         end
         prev = type(k) == "number" and k or nil
     end
@@ -313,7 +326,7 @@ tfm.exec.disableMortCommand()
 tfm.exec.setRoomMaxPlayers(15)
 
 function initCards()
-    
+
     chances = {
         Chance:new(1, "Speeding fine!", "Pay $150", function(player) 
             player:addMoney(-150)
@@ -646,7 +659,7 @@ function showLandInfo(id, target)
     if land.owner == target then
         --todo: support the functionality of the buttons
         ui.addTextArea(10001, "<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>", target, 280, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10002, "Add hotels", target, 340, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10002, "<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
     end
@@ -669,10 +682,9 @@ function main()
     tfm.exec.newGame(lobby)
 end
 
-
 function eventChatCommand(name, cmd)
     if cmd:sub(1, 1) == "g" then
-        players[name]:goTo(tonumber(cmd:sub(2, 2)))
+        players[name]:goTo(tonumber(cmd:sub(2)))
     end
 end
 
@@ -712,7 +724,8 @@ function eventNewGame()
 
         --initializing the players
         for name, player in next, tfm.get.room.playerList do
-            players[name] = Player(name) 
+            players[name] = Player(name)
+            --tfm.exec.killPlayer(name)
         end
 
         --initializing lands and cards
@@ -789,10 +802,12 @@ function eventTextAreaCallback(id, name, evt)
             changeTurn()
         elseif key == "addHouse" then
             local land = lands[tonumber(value)]
-
             if land.houses < 4 then
                 land:addHouse()
             end
+        elseif key == "addHotel" then
+            local land = lands[tonumber(value)]
+            land:addHotel()
         end
     end
 end
