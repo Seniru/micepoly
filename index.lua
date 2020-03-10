@@ -705,24 +705,24 @@ function auctionLand(landId, bid, bidder, newInstance)
             currentBidder = bidder
         }
         for name, _ in next, players do
-            auctions.bidders[name] = true
+            auctions.bidders[name] = 1
         end
     elseif auctions and not newInstance then
         ui.removeTextArea(13000)
         auctions.highest = bid
         auctions.highestBidder = bidder
         auctions.currentBidder = getNext(auctions.bidders, auctions.currentBidder)
-        print(auctions.currentBidder)
+        auctions.bidders[auctions.currentBidder] = auctions.highest + 1
     else
         tfm.exec.chatMessage("An auction is ongoing, try again later!", bidder)
     end
-    --ui.addPopup(1, "Auctioning " .. land.name .. "!\nPlace your bid")
-    ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest .. " [ + ]\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
+    ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
 function handleCloseBtn(id, name)
     local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 1000}
+        [10000] = {10000, 10001, 10002, 10003, 10004, 1000},
+        [11002] = {11000, 11001, 11002}
     }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
@@ -842,17 +842,19 @@ function eventTextAreaCallback(id, name, evt)
         print(tostring(players[name]))
     elseif evt == "close" then
         handleCloseBtn(id, name)
+    elseif evt == "increaseBid" then
+        auctions.bidders[name] = auctions.bidders[name] + 1
+        ui.updateTextArea(13000, "Auctioning " .. lands[auctions.landId].name .."!\nPlace your bid\n" .. auctions.bidders[name] .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", name)
     elseif evt == "bid" then
-        print("Bidded")
-        auctionLand(auctions.landId, auctions.highest + 1, name)
+        auctionLand(auctions.landId, auctions.bidders[name], name)
     elseif evt == "fold" then
         auctions.bidders[name] = nil
         auctions.totalBidders = auctions.totalBidders - 1
-        print("fold")
         if auctions.totalBidders == 1 then
-            lands[auctions.landId]:setOwner(name, auctions.highest)
+            lands[auctions.landId]:setOwner(auctions.highestBidder, auctions.highest)
             auctions = nil
         end
+        ui.removeTextArea(id)
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
@@ -860,7 +862,7 @@ function eventTextAreaCallback(id, name, evt)
         if key == "land" then
             showLandInfo(tonumber(value), name)
         --buy land evet
-        elseif key == "buy" then
+    elseif key == "buy" then
             lands[tonumber(value)]:setOwner(name)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
@@ -877,7 +879,8 @@ function eventTextAreaCallback(id, name, evt)
             land:addHotel()
             showLandInfo(land.landIndex, name)
         elseif key == "auction" then
-            auctionLand(tonumber(value), 1, name, true)
+            handleCloseBtn(id, name)
+            auctionLand(tonumber(value), 0, name, true)
         end
     end
 end
