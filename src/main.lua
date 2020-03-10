@@ -364,17 +364,16 @@ function auctionLand(landId, bid, bidder, newInstance)
         auctions.highest = bid
         auctions.highestBidder = bidder
         auctions.currentBidder = getNext(auctions.bidders, auctions.currentBidder)
-        print(auctions.currentBidder)
     else
         tfm.exec.chatMessage("An auction is ongoing, try again later!", bidder)
     end
-    --ui.addPopup(1, "Auctioning " .. land.name .. "!\nPlace your bid")
     ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest .. " [ + ]\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
 function handleCloseBtn(id, name)
     local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 1000}
+        [10000] = {10000, 10001, 10002, 10003, 10004, 1000},
+        [11002] = {11000, 11001, 11002}
     }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do

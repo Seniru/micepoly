@@ -16,16 +16,15 @@ function eventTextAreaCallback(id, name, evt)
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "bid" then
-        print("Bidded")
         auctionLand(auctions.landId, auctions.highest + 1, name)
     elseif evt == "fold" then
         auctions.bidders[name] = nil
         auctions.totalBidders = auctions.totalBidders - 1
-        print("fold")
         if auctions.totalBidders == 1 then
-            lands[auctions.landId]:setOwner(name, auctions.highest)
+            lands[auctions.landId]:setOwner(auctions.highestBidder, auctions.highest)
             auctions = nil
         end
+        ui.removeTextArea(id)
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
@@ -33,7 +32,7 @@ function eventTextAreaCallback(id, name, evt)
         if key == "land" then
             showLandInfo(tonumber(value), name)
         --buy land evet
-        elseif key == "buy" then
+    elseif key == "buy" then
             lands[tonumber(value)]:setOwner(name)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
@@ -50,6 +49,7 @@ function eventTextAreaCallback(id, name, evt)
             land:addHotel()
             showLandInfo(land.landIndex, name)
         elseif key == "auction" then
+            handleCloseBtn(id, name)
             auctionLand(tonumber(value), 1, name, true)
         end
     end
