@@ -19,3 +19,5 @@ local landCategories = {
     ["green"] = {32, 33, 35},
     ["dark blue"] = {38, 40}
 }
+
+local auctions

@@ -345,6 +345,33 @@ function showLandInfo(id, target)
     end
 end
 
+function auctionLand(landId, bid, bidder, newInstance)
+    local land = lands[landId]
+    if not auctions and newInstance then
+        auctions = {
+            landId = landId,
+            highest = bid,
+            highestBidder = bidder,
+            bidders = {},
+            totalBidders = totalPlayers,
+            currentBidder = bidder
+        }
+        for name, _ in next, players do
+            auctions.bidders[name] = true
+        end
+    elseif auctions and not newInstance then
+        ui.removeTextArea(13000)
+        auctions.highest = bid
+        auctions.highestBidder = bidder
+        auctions.currentBidder = getNext(auctions.bidders, auctions.currentBidder)
+        print(auctions.currentBidder)
+    else
+        tfm.exec.chatMessage("An auction is ongoing, try again later!", bidder)
+    end
+    --ui.addPopup(1, "Auctioning " .. land.name .. "!\nPlace your bid")
+    ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest .. " [ + ]\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
+end
+
 function handleCloseBtn(id, name)
     local closeSequence = {
         [10000] = {10000, 10001, 10002, 10003, 10004, 1000}

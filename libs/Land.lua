@@ -43,7 +43,7 @@ function Land:removeOwner(owner)
     self.owner = nil
 end
 
-function Land:setOwner(owner)
+function Land:setOwner(owner, auctionedPrice)
     if self.owner then
         error(self.name .. " already has an owner")
     else
@@ -53,7 +53,7 @@ function Land:setOwner(owner)
         else
             table.insert(players[owner].ownedLands[self.color], self.landIndex)
         end
-        players[owner]:addMoney(-self.price)
+        players[owner]:addMoney(-(auctionedPrice or self.price))
         --todo: make this more visible
         --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end

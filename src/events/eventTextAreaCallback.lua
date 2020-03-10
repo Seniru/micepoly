@@ -15,6 +15,17 @@ function eventTextAreaCallback(id, name, evt)
         print(tostring(players[name]))
     elseif evt == "close" then
         handleCloseBtn(id, name)
+    elseif evt == "bid" then
+        print("Bidded")
+        auctionLand(auctions.landId, auctions.highest + 1, name)
+    elseif evt == "fold" then
+        auctions.bidders[name] = nil
+        auctions.totalBidders = auctions.totalBidders - 1
+        print("fold")
+        if auctions.totalBidders == 1 then
+            lands[auctions.landId]:setOwner(name, auctions.highest)
+            auctions = nil
+        end
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
@@ -38,6 +49,8 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:addHotel()
             showLandInfo(land.landIndex, name)
+        elseif key == "auction" then
+            auctionLand(tonumber(value), 1, name, true)
         end
     end
 end
