@@ -357,17 +357,18 @@ function auctionLand(landId, bid, bidder, newInstance)
             currentBidder = bidder
         }
         for name, _ in next, players do
-            auctions.bidders[name] = true
+            auctions.bidders[name] = 1
         end
     elseif auctions and not newInstance then
         ui.removeTextArea(13000)
         auctions.highest = bid
         auctions.highestBidder = bidder
         auctions.currentBidder = getNext(auctions.bidders, auctions.currentBidder)
+        auctions.bidders[auctions.currentBidder] = auctions.highest + 1
     else
         tfm.exec.chatMessage("An auction is ongoing, try again later!", bidder)
     end
-    ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest .. " [ + ]\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
+    ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
 function handleCloseBtn(id, name)

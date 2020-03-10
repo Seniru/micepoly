@@ -15,8 +15,11 @@ function eventTextAreaCallback(id, name, evt)
         print(tostring(players[name]))
     elseif evt == "close" then
         handleCloseBtn(id, name)
+    elseif evt == "increaseBid" then
+        auctions.bidders[name] = auctions.bidders[name] + 1
+        ui.updateTextArea(13000, "Auctioning " .. lands[auctions.landId].name .."!\nPlace your bid\n" .. auctions.bidders[name] .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", name)
     elseif evt == "bid" then
-        auctionLand(auctions.landId, auctions.highest + 1, name)
+        auctionLand(auctions.landId, auctions.bidders[name], name)
     elseif evt == "fold" then
         auctions.bidders[name] = nil
         auctions.totalBidders = auctions.totalBidders - 1
@@ -50,7 +53,7 @@ function eventTextAreaCallback(id, name, evt)
             showLandInfo(land.landIndex, name)
         elseif key == "auction" then
             handleCloseBtn(id, name)
-            auctionLand(tonumber(value), 1, name, true)
+            auctionLand(tonumber(value), 0, name, true)
         end
     end
 end
