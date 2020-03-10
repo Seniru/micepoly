@@ -71,7 +71,7 @@ function initCards()
         end),
         Chance:new(17, "$50 Reward!", "Like our post in forum!", function(player)
             --todo: add the forum link
-            tfm.exec.chatMessage("Like our post in forum\nLink: https://123456.com")
+            tfm.exec.chatMessage("Like our post in forum\nLink: https://123456.com", player.name)
             player:addMoney(50)
         end),
         Chance:new(18, "AFK Death", "Pay $20 to revive!", function(player)
@@ -286,7 +286,7 @@ end
 
 function displayLands(target)
     for id, land in next, lands do
-        ui.addTextArea(1000 + id, "<a href='event:land:" .. id .. "'><b>" .. land.name .. "</b></a>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, true)
+        ui.addTextArea(1000 + id, "<a href='event:land:" .. id .. "'><b>" .. land.name .. "</b></a>", target, land.locX - 20, land.locY - 10, 60, 30, nil, nil, 0, false)
     end
 end
 

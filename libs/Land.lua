@@ -66,7 +66,7 @@ function Land:addHouse()
         self.houses = self.houses + 1
         players[self.owner]:addMoney(-self.buildCost)
         local houseLocData = housePoints[self.landIndex][self.houses]
-        ui.addTextArea(1000000 + (self.landIndex * 100 + self.houses), "H", nil, houseLocData.x, houseLocData.y, houseLocData.w, houseLocData.h, nil, nil, 0.5, true)
+        ui.addTextArea(1000000 + (self.landIndex * 100 + self.houses), "H", nil, houseLocData.x, houseLocData.y, houseLocData.w, houseLocData.h, nil, nil, 0.5, false)
     end
 end
 
@@ -81,7 +81,7 @@ function Land:addHotel()
             self:removeHouse()
         end
         local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
-        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, true)
+        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, false)
         self.hasHotel = true
         players[self.owner]:addMoney(-self.buildCost)
     end
