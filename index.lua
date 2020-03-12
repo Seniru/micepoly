@@ -228,7 +228,7 @@ function Land:setOwner(owner, auctionedPrice)
 end
 
 function Land:addHouse()
-    if self.houses >= 4 or self.hasHotel then
+    if not self:canBuild("house") then
         error("Can't build a house here")
     else
         self.houses = self.houses + 1
@@ -238,20 +238,33 @@ function Land:addHouse()
     end
 end
 
-function Land:removeHouse()
-    ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
-    self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
-end
-
 function Land:addHotel()
-    if not self.hasHotel and self.houses == 4 then
+    if self:canBuild("hotel") then
         for i=1, 4 do
-            self:removeHouse()
+            self:removeBuildings()
         end
         local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
-        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, false)
         self.hasHotel = true
+        self.houses = 0
+        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, false)
         players[self.owner]:addMoney(-self.buildCost)
+    end
+end
+
+function Land:removeBuildings()
+    if self:canBreak() then
+        if self.hasHotel then
+            ui.removeTextArea(1000000 + (self.landIndex * 100 + 5))
+            self.hasHotel = false
+            for houses = 1, 4 do
+                local houseLocData = housePoints[self.landIndex][houses]
+                ui.addTextArea(1000000 + (self.landIndex * 100 + houses), "H", nil, houseLocData.x, houseLocData.y, houseLocData.w, houseLocData.h, nil, nil, 0.5, false)
+            end
+            self.houses = 4
+        else
+            ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
+            self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
+        end
     end
 end
 
@@ -295,6 +308,10 @@ function Land:canBuild(building)
         end
         return true
     end
+end
+
+function Land:canBreak()
+    return true
 end
 
 --[[@abstract method]]--
@@ -690,6 +707,7 @@ function showLandInfo(id, target)
         ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10005, "<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>", target, 500, 330, 60, 40, nil, nil, 1, true)
     end
 end
 
@@ -721,7 +739,7 @@ end
 
 function handleCloseBtn(id, name)
     local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 1000},
+        [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
         [11002] = {11000, 11001, 11002}
     }
     if closeSequence[id] then
@@ -862,7 +880,7 @@ function eventTextAreaCallback(id, name, evt)
         if key == "land" then
             showLandInfo(tonumber(value), name)
         --buy land evet
-    elseif key == "buy" then
+        elseif key == "buy" then
             lands[tonumber(value)]:setOwner(name)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
@@ -881,6 +899,10 @@ function eventTextAreaCallback(id, name, evt)
         elseif key == "auction" then
             handleCloseBtn(id, name)
             auctionLand(tonumber(value), 0, name, true)
+        elseif key == "breakHouse" then
+            local land = lands[tonumber(value)]
+            land:removeBuildings()
+            players[land.owner]:addMoney(land.buildCost / 2)
         end
     end
 end
