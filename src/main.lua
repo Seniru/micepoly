@@ -342,6 +342,7 @@ function showLandInfo(id, target)
         ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10005, "<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>", target, 500, 330, 60, 40, nil, nil, 1, true)
     end
 end
 
@@ -373,7 +374,7 @@ end
 
 function handleCloseBtn(id, name)
     local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 1000},
+        [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
         [11002] = {11000, 11001, 11002}
     }
     if closeSequence[id] then

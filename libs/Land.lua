@@ -60,7 +60,7 @@ function Land:setOwner(owner, auctionedPrice)
 end
 
 function Land:addHouse()
-    if self.houses >= 4 or self.hasHotel then
+    if not self:canBuild("house") then
         error("Can't build a house here")
     else
         self.houses = self.houses + 1
@@ -70,20 +70,33 @@ function Land:addHouse()
     end
 end
 
-function Land:removeHouse()
-    ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
-    self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
-end
-
 function Land:addHotel()
-    if not self.hasHotel and self.houses == 4 then
+    if self:canBuild("hotel") then
         for i=1, 4 do
-            self:removeHouse()
+            self:removeBuildings()
         end
         local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
-        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, false)
         self.hasHotel = true
+        self.houses = 0
+        ui.addTextArea(1000000 + (self.landIndex * 100 + 5), "H+", nil, houseLocData.x, houseLocData.y, houseLocData.w * (self.isInHorizon and 4 or 1), houseLocData.h * (self.isInHorizon and 1 or 4), nil, nil, 0.5, false)
         players[self.owner]:addMoney(-self.buildCost)
+    end
+end
+
+function Land:removeBuildings()
+    if self:canBreak() then
+        if self.hasHotel then
+            ui.removeTextArea(1000000 + (self.landIndex * 100 + 5))
+            self.hasHotel = false
+            for houses = 1, 4 do
+                local houseLocData = housePoints[self.landIndex][houses]
+                ui.addTextArea(1000000 + (self.landIndex * 100 + houses), "H", nil, houseLocData.x, houseLocData.y, houseLocData.w, houseLocData.h, nil, nil, 0.5, false)
+            end
+            self.houses = 4
+        else
+            ui.removeTextArea(1000000 + (self.landIndex * 100 + self.houses))
+            self.houses = (self.houses - 1 < 0) and 0 or self.houses - 1
+        end
     end
 end
 
@@ -127,6 +140,10 @@ function Land:canBuild(building)
         end
         return true
     end
+end
+
+function Land:canBreak()
+    return true
 end
 
 --[[@abstract method]]--

@@ -35,7 +35,7 @@ function eventTextAreaCallback(id, name, evt)
         if key == "land" then
             showLandInfo(tonumber(value), name)
         --buy land evet
-    elseif key == "buy" then
+        elseif key == "buy" then
             lands[tonumber(value)]:setOwner(name)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
@@ -54,6 +54,10 @@ function eventTextAreaCallback(id, name, evt)
         elseif key == "auction" then
             handleCloseBtn(id, name)
             auctionLand(tonumber(value), 0, name, true)
+        elseif key == "breakHouse" then
+            local land = lands[tonumber(value)]
+            land:removeBuildings()
+            players[land.owner]:addMoney(land.buildCost / 2)
         end
     end
 end
