@@ -241,7 +241,7 @@ end
 function Land:addHotel()
     if self:canBuild("hotel") then
         for i=1, 4 do
-            self:removeBuildings()
+            self:removeBuildings(true)
         end
         local houseLocData = housePoints[self.landIndex][self.isInOpposite and 4 or 1]
         self.hasHotel = true
@@ -251,14 +251,14 @@ function Land:addHotel()
     end
 end
 
-function Land:removeBuildings()
-    if self:canBreak() then
+function Land:removeBuildings(force)
+    if force or self:canBreak() then
         if self.hasHotel then
             ui.removeTextArea(1000000 + (self.landIndex * 100 + 5))
             self.hasHotel = false
             for houses = 1, 4 do
                 local houseLocData = housePoints[self.landIndex][houses]
-                ui.addTextArea(1000000 + (self.landIndex * 100 + houses), "H", nil, houseLocData.x, houseLocData.y, houseLocData.w, houseLocData.h, nil, nil, 0.5, false)
+                ui.removeTextArea(1000000 + (self.landIndex * 100 + houses))
             end
             self.houses = 4
         else
@@ -311,6 +311,18 @@ function Land:canBuild(building)
 end
 
 function Land:canBreak()
+    if self.hasHotel then
+        return true
+    elseif self.houses == 0 then
+        return false
+    else
+        for cat, land in next, landCategories[self.color] do
+            local land = lands[land]
+            if land.landIndex ~= self.landIndex and land.houses > self.houses then
+                return false
+            end
+        end
+    end
     return true
 end
 
@@ -707,7 +719,7 @@ function showLandInfo(id, target)
         ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10005, "<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>", target, 500, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10005, land:canBreak() and ("<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>") or "<N2>Sell houses</N2>", target, 500, 330, 60, 40, nil, nil, 1, true)
     end
 end
 
@@ -903,6 +915,7 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:removeBuildings()
             players[land.owner]:addMoney(land.buildCost / 2)
+            showLandInfo(land.landIndex, name)
         end
     end
 end
