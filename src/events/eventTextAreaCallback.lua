@@ -58,6 +58,7 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:removeBuildings()
             players[land.owner]:addMoney(land.buildCost / 2)
+            showLandInfo(land.landIndex, name)
         end
     end
 end
