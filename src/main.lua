@@ -340,7 +340,7 @@ function showLandInfo(id, target)
         --todo: support the functionality of the buttons
         ui.addTextArea(10001, land:canBuild("house") and ("<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>") or "<N2>Add houses</N2>", target, 280, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10003, (not land.isMortgaged) and ("<a href='event:mortgage:" .. land.landIndex .. "'>Mortgage</a>") or ("<a href='event:unmortgage:" .. land.landIndex .."'>Unmortgage</a>"), target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10005, land:canBreak() and ("<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>") or "<N2>Sell houses</N2>", target, 500, 330, 60, 40, nil, nil, 1, true)
     end

@@ -59,6 +59,14 @@ function eventTextAreaCallback(id, name, evt)
             land:removeBuildings()
             players[land.owner]:addMoney(land.buildCost / 2)
             showLandInfo(land.landIndex, name)
+        elseif key == "mortgage" then
+            local land = lands[tonumber(value)]
+            land:mortgage(true)
+            showLandInfo(land.landIndex, name)
+        elseif key == "unmortgage" then
+            local land = lands[tonumber(value)]
+            land:mortgage(false)
+            showLandInfo(land.landIndex, name)
         end
     end
 end

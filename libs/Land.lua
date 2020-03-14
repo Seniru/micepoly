@@ -100,6 +100,20 @@ function Land:removeBuildings(force)
     end
 end
 
+function Land:mortgage(mortgage)
+    if mortgage then
+        if self.houses > 0 or self.hasHotel then
+            tfm.exec.chatMessage("Can't mortgage while houses/hotels are on the land", self.owner)
+            return false
+        end
+        self.isMortgaged = true
+        players[self.owner]:addMoney(self.price / 2)
+    else
+        self.isMortgaged = false
+        players[self.owner]:addMoney(-(self.price / 2 * 1.1))
+    end
+end
+
 function Land:getRent()
     --checking if the player owns all the lands in that category
     if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
