@@ -116,6 +116,10 @@ end
 
 function Land:getRent()
     --checking if the player owns all the lands in that category
+    if self.isMortgaged then
+        return 0
+    end
+
     if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
         if self.hasHotel then
             return self.hotelRent
