@@ -268,8 +268,26 @@ function Land:removeBuildings(force)
     end
 end
 
+function Land:mortgage(mortgage)
+    if mortgage then
+        if self.houses > 0 or self.hasHotel then
+            tfm.exec.chatMessage("Can't mortgage while houses/hotels are on the land", self.owner)
+            return false
+        end
+        self.isMortgaged = true
+        players[self.owner]:addMoney(self.price / 2)
+    else
+        self.isMortgaged = false
+        players[self.owner]:addMoney(-(self.price / 2 * 1.1))
+    end
+end
+
 function Land:getRent()
     --checking if the player owns all the lands in that category
+    if self.isMortgaged then
+        return 0
+    end
+
     if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
         if self.hasHotel then
             return self.hotelRent
@@ -717,7 +735,7 @@ function showLandInfo(id, target)
         --todo: support the functionality of the buttons
         ui.addTextArea(10001, land:canBuild("house") and ("<a href='event:addHouse:" .. land.landIndex .. "'>Add houses</a>") or "<N2>Add houses</N2>", target, 280, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10002, land:canBuild("hotel") and ("<a href='event:addHotel:" .. land.landIndex .. "'>Add hotel</a>") or "<N2>Add hotel</N2>", target, 340, 330, 60, 40, nil, nil, 1, true)
-        ui.addTextArea(10003, "Mortgage", target, 400, 330, 60, 40, nil, nil, 1, true)
+        ui.addTextArea(10003, (not land.isMortgaged) and ("<a href='event:mortgage:" .. land.landIndex .. "'>Mortgage</a>") or ("<a href='event:unmortgage:" .. land.landIndex .."'>Unmortgage</a>"), target, 400, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10004, "Sell", target, 460, 330, 60, 40, nil, nil, 1, true)
         ui.addTextArea(10005, land:canBreak() and ("<a href='event:breakHouse:" .. land.landIndex .. "'>Sell houses</a>") or "<N2>Sell houses</N2>", target, 500, 330, 60, 40, nil, nil, 1, true)
     end
@@ -915,6 +933,14 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:removeBuildings()
             players[land.owner]:addMoney(land.buildCost / 2)
+            showLandInfo(land.landIndex, name)
+        elseif key == "mortgage" then
+            local land = lands[tonumber(value)]
+            land:mortgage(true)
+            showLandInfo(land.landIndex, name)
+        elseif key == "unmortgage" then
+            local land = lands[tonumber(value)]
+            land:mortgage(false)
             showLandInfo(land.landIndex, name)
         end
     end
