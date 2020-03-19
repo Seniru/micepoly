@@ -135,6 +135,17 @@ function Player.new(name)
     return self
 end
 
+function Player:getTotalWorth()
+    local total = self.money
+    for cat, ownedLands in next, self.ownedLands do
+        for _, landId in next, ownedLands do
+            local land = lands[landId]
+            total = total + land.price + (land.houses + (land.hasHotel and 1 or 0)) * land.buildCost
+        end
+    end
+    return total
+end
+
 function Player:goTo(land)
     local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
@@ -675,6 +686,17 @@ function initLands()
         chanceFn(self, player)
     end
 
+    lands[5].onLand = function(self, player) -- income tax
+        ui.addTextArea(14000, "Income Tax<br>Pay 2000 or 10% of your total worth", player.name, 300, 200, 200, 100, nil, nil, 1, true)
+        ui.addTextArea(14001, "<a href='event:incomeTaxFull'>Pay 2000</a>", player.name, 300, 320, 90, 30, nil, nil, 1, true)
+        ui.addTextArea(14002, "<a href='event:incomeTax10%'>Pay 10%</a>", player.name, 410, 320, 90, 30, nil, nil, 1, true)
+    end
+
+    lands[39].onLand = function(self, player) -- super tax
+        tfm.exec.chatMessage("Super Tax! Pay $1000", player.name)
+        player:addMoney(-1000)
+    end
+
     displayLands()
     
 end
@@ -770,7 +792,8 @@ end
 function handleCloseBtn(id, name)
     local closeSequence = {
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
-        [11002] = {11000, 11001, 11002}
+        [11002] = {11000, 11001, 11002},
+        [14000] = {14000, 14001, 14002}
     }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
@@ -903,6 +926,15 @@ function eventTextAreaCallback(id, name, evt)
             auctions = nil
         end
         ui.removeTextArea(id)
+    elseif evt == "incomeTaxFull" then
+        players[name]:addMoney(-2000)
+        handleCloseBtn(14000, name)
+    elseif evt == "incomeTax10%" then
+        local player = players[name]
+        local tax = player:getTotalWorth() * 0.1
+        player:addMoney(-tax)
+        tfm.exec.chatMessage("Paid tax of worth " .. tax, name)
+        handleCloseBtn(14000, name)
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
