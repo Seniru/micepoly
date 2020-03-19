@@ -20,6 +20,17 @@ function Player.new(name)
     return self
 end
 
+function Player:getTotalWorth()
+    local total = self.money
+    for cat, ownedLands in next, self.ownedLands do
+        for _, landId in next, ownedLands do
+            local land = lands[landId]
+            total = total + land.price + (land.houses + (land.hasHotel and 1 or 0)) * land.buildCost
+        end
+    end
+    return total
+end
+
 function Player:goTo(land)
     local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)

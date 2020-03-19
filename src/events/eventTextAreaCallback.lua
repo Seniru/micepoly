@@ -28,6 +28,15 @@ function eventTextAreaCallback(id, name, evt)
             auctions = nil
         end
         ui.removeTextArea(id)
+    elseif evt == "incomeTaxFull" then
+        players[name]:addMoney(-2000)
+        handleCloseBtn(14000, name)
+    elseif evt == "incomeTax10%" then
+        local player = players[name]
+        local tax = player:getTotalWorth() * 0.1
+        player:addMoney(-tax)
+        tfm.exec.chatMessage("Paid tax of worth " .. tax, name)
+        handleCloseBtn(14000, name)
         --complex events
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
