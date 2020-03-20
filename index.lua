@@ -132,6 +132,8 @@ function Player.new(name)
     self.money = 15000
     self.ownedLands = {}
     self.current = 1
+    self.isInJail = false
+    self.doubles = 0
     return self
 end
 
@@ -148,9 +150,7 @@ end
 
 function Player:goTo(land)
     if land == "jail" then
-        tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
-        changeTurn()
-        return
+        return self:goToJail()
     end
     local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
@@ -179,6 +179,13 @@ end
 
 function Player:updateStatsBar()
     ui.updateTextArea(13, "Money: $" .. self.money, self.name)
+end
+
+function Player:goToJail()
+    tfm.exec.movePlayer(self.name, points["jail"].x, points["jail"].y, false)
+    self.isInJail = true
+    self.doubles = 0
+    changeTurn()
 end
 
 --[[ Land class ]]
@@ -464,7 +471,7 @@ function initCards()
             print("Not implemented")
         end),
         Chance:new(12, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
-            player:goTo("jail")
+            player:goToJail()
         end),
         Chance:new(13, "Advance to Buffy`s Residence", "", function(player)
             player:goTo(2) -- Going to buffy's residence
@@ -529,7 +536,7 @@ function initCards()
             player:addMoney(-1000)
         end),
         CommunityChest:new(7, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
-            player:goTo("jail")
+            player:goToJail()
         end),
         CommunityChest:new(8, "It`s your birthday!", "Collect $100 from each player", function(player)
             tfm.exec.chatMessage("It's " .. player.name .. "'s Birthday! Give him a present of $200")
@@ -700,7 +707,7 @@ function initLands()
     end
 
     lands[31].onLand = function(self, player)
-        player:goTo("jail")
+        player:goToJail()
     end
 
     displayLands()
@@ -915,8 +922,13 @@ function eventTextAreaCallback(id, name, evt)
             players[name].current = players[name].current - 40
             players[name]:addMoney(2000)
         end
+        if die1 == die2 then
+            players[name].doubles = players[name].doubles + 1
+            if players[name].doubles == 3 then
+                return players[name]:goToJail()
+            end
+        end
         players[name]:goTo(players[name].current)
-        print(tostring(players[name]))
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "increaseBid" then
