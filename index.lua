@@ -464,8 +464,7 @@ function initCards()
             print("Not implemented")
         end),
         Chance:new(12, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
-            --todo: implement this correctly after building the true jail
-            player:goTo(11)
+            player:goTo("jail")
         end),
         Chance:new(13, "Advance to Buffy`s Residence", "", function(player)
             player:goTo(2) -- Going to buffy's residence
@@ -530,8 +529,7 @@ function initCards()
             player:addMoney(-1000)
         end),
         CommunityChest:new(7, "Go to Jail!", "Move directly to jail. Do not pass GO. Do not collect $2000", function(player)
-            --todo: implement this correctly after building the true jail
-            player:goTo(11)
+            player:goTo("jail")
         end),
         CommunityChest:new(8, "It`s your birthday!", "Collect $100 from each player", function(player)
             tfm.exec.chatMessage("It's " .. player.name .. "'s Birthday! Give him a present of $200")
