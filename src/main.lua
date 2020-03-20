@@ -291,6 +291,10 @@ function initLands()
         player:addMoney(-1000)
     end
 
+    lands[31].onLand = function(self, player)
+        player:goTo("jail")
+    end
+
     displayLands()
     
 end

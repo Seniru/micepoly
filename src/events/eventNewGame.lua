@@ -7,7 +7,7 @@ function eventNewGame()
         for _, o in next, path(mapDom, "Z", "S", "S") do
             --getting normal land points
             if o.attribute.lua and o.attribute.T == cloudId then
-                points[tonumber(o.attribute.lua)] = {x = o.attribute.X, y = o.attribute.Y}
+                points[tonumber(o.attribute.lua) or o.attribute.lua] = {x = o.attribute.X, y = o.attribute.Y}
             elseif o.attribute.lua then  --getting house points
                 local landId, houseId = o.attribute.lua:match("^(%d+)0(%d)$")
                 landId = tonumber(landId)

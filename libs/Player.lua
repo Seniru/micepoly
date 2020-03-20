@@ -32,6 +32,11 @@ function Player:getTotalWorth()
 end
 
 function Player:goTo(land)
+    if land == "jail" then
+        tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
+        changeTurn()
+        return
+    end
     local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
     if landObj.isSpecial then
@@ -40,9 +45,8 @@ function Player:goTo(land)
         changeTurn()
     else
         if not landObj.owner then
-            ui.addTextArea(11000, "Buy or Auction? --Auction not supported--", self.name, 300, 100, 100, 100, nil, nil, 1, true)
+            ui.addTextArea(11000, "Buy or Auction?", self.name, 300, 100, 100, 100, nil, nil, 1, true)
             ui.addTextArea(11001, "<a href='event:buy:" .. landObj.landIndex .. "'>Buy</a>", self.name, 300, 250, 50, 50, nil, nil, 1, true)
-            --todo: Implement the bid functionality and change the link text
             ui.addTextArea(11002, "<a href='event:auction:" .. landObj.landIndex .. "'>Auction</a>", self.name, 360, 250, 50, 50, nil, nil, 1, true)
         else
             local rent = landObj:getRent()
