@@ -11,8 +11,13 @@ function eventTextAreaCallback(id, name, evt)
             players[name].current = players[name].current - 40
             players[name]:addMoney(2000)
         end
+        if die1 == die2 then
+            players[name].doubles = players[name].doubles + 1
+            if players[name].doubles == 3 then
+                return players[name]:goToJail()
+            end
+        end
         players[name]:goTo(players[name].current)
-        print(tostring(players[name]))
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "increaseBid" then

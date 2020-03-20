@@ -17,6 +17,8 @@ function Player.new(name)
     self.money = 15000
     self.ownedLands = {}
     self.current = 1
+    self.isInJail = false
+    self.doubles = 0
     return self
 end
 
@@ -33,9 +35,7 @@ end
 
 function Player:goTo(land)
     if land == "jail" then
-        tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
-        changeTurn()
-        return
+        return self:goToJail()
     end
     local landObj = lands[land]
     tfm.exec.movePlayer(self.name, points[land].x, points[land].y, false)
@@ -64,4 +64,11 @@ end
 
 function Player:updateStatsBar()
     ui.updateTextArea(13, "Money: $" .. self.money, self.name)
+end
+
+function Player:goToJail()
+    tfm.exec.movePlayer(self.name, points["jail"].x, points["jail"].y, false)
+    self.isInJail = true
+    self.doubles = 0
+    changeTurn()
 end
