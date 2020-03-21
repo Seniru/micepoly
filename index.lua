@@ -148,7 +148,7 @@ function Player:getTotalWorth()
     return total
 end
 
-function Player:goTo(land)
+function Player:goTo(land, withDoubles)
     if land == "jail" then
         return self:goToJail()
     end
@@ -157,7 +157,7 @@ function Player:goTo(land)
     if landObj.isSpecial then
         landObj:onLand(self)
         --todo: remove this line after implementing all special cases
-        changeTurn()
+        if not withDoubles then changeTurn() end
     else
         if not landObj.owner then
             ui.addTextArea(11000, "Buy or Auction?", self.name, 300, 100, 100, 100, nil, nil, 1, true)
@@ -167,7 +167,7 @@ function Player:goTo(land)
             local rent = landObj:getRent()
             self:addMoney(-rent)
             players[landObj.owner]:addMoney(rent)
-            changeTurn()
+            if not withDoubles then changeTurn() end
         end
     end
 end
@@ -185,6 +185,7 @@ function Player:goToJail()
     tfm.exec.movePlayer(self.name, points["jail"].x, points["jail"].y, false)
     self.isInJail = true
     self.doubles = 0
+    self.current = 11
     changeTurn()
 end
 
@@ -235,7 +236,7 @@ end
 
 function Land:setOwner(owner, auctionedPrice)
     if self.owner then
-        error(self.name .. " already has an owner")
+        tfm.exec.chatMessage(self.name .. " already has an owner", owner)
     else
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
@@ -244,6 +245,7 @@ function Land:setOwner(owner, auctionedPrice)
             table.insert(players[owner].ownedLands[self.color], self.landIndex)
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
+        if players[owner].doubles == 0 then changeTurn() end
         --todo: make this more visible
         --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
@@ -802,6 +804,47 @@ function auctionLand(landId, bid, bidder, newInstance)
     ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
+function handleDice(name)
+    --todo: refactor this function
+    local die1 = 1--math.random(1, 6)
+    local die2 = 1--math.random(1, 6)
+    local total = die1 + die2
+    ui.updateTextArea(10, die1)
+    ui.updateTextArea(11, die2)
+
+    if players[name].isInJail then
+        if die1 == die2 then
+            players[name].doubles = players[name].doubles + 1
+            if players[name].doubles == 3 then
+                players[name].doubles = 0
+                players[name].isInJail = false
+                players[name].current = 11 + die1 + die2
+                players[name]:goTo(11 + die1 + die2)
+            end
+        else
+            players[name].doubles = 0
+        end
+    else
+        players[name].current = players[name].current + total
+        --giving salary after passing one round
+        if players[name].current > 40 then
+            players[name].current = players[name].current - 40
+            players[name]:addMoney(2000)
+        end
+
+        if die1 == die2 then
+            players[name].doubles = players[name].doubles + 1
+            if players[name].doubles == 3 then
+                return players[name]:goToJail()
+            end
+            players[name]:goTo(players[name].current, true)
+        else
+            players[name].doubles = 0
+            players[name]:goTo(players[name].current)
+        end
+    end
+end
+
 function handleCloseBtn(id, name)
     local closeSequence = {
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
@@ -910,25 +953,8 @@ function eventPlayerLeft(name)
     totalPlayers = totalPlayers - 1
 end
 function eventTextAreaCallback(id, name, evt)
-    --dice rolling event
     if evt == "roll" and name == currentPlayer then
-        local die1 = math.random(1, 6)
-        local die2 = math.random(1, 6)
-        local total = die1 + die2
-        ui.updateTextArea(10, die1)
-        ui.updateTextArea(11, die2)
-        players[name].current = players[name].current + total
-        if players[name].current > 40 then
-            players[name].current = players[name].current - 40
-            players[name]:addMoney(2000)
-        end
-        if die1 == die2 then
-            players[name].doubles = players[name].doubles + 1
-            if players[name].doubles == 3 then
-                return players[name]:goToJail()
-            end
-        end
-        players[name]:goTo(players[name].current)
+        handleDice(name)
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "increaseBid" then
@@ -965,7 +991,6 @@ function eventTextAreaCallback(id, name, evt)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
             ui.removeTextArea(11002, name)
-            changeTurn()
         elseif key == "addHouse" then
             local land = lands[tonumber(value)]
             if land.houses < 4 then
