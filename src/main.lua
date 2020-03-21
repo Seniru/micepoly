@@ -385,6 +385,30 @@ function auctionLand(landId, bid, bidder, newInstance)
     ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
+function handleDice(name)
+    --todo: refactor this function
+    local die1 = math.random(1, 6)
+    local die2 = math.random(1, 6)
+    local total = die1 + die2
+    ui.updateTextArea(10, die1)
+    ui.updateTextArea(11, die2)
+    players[name].current = players[name].current + total
+    if players[name].current > 40 then
+        players[name].current = players[name].current - 40
+        players[name]:addMoney(2000)
+    end
+    if die1 == die2 then
+        players[name].doubles = players[name].doubles + 1
+        if players[name].doubles == 3 then
+            return players[name]:goToJail()
+        end
+        players[name]:goTo(players[name].current, true)
+    else
+        players[name].doubles = 0
+        players[name]:goTo(players[name].current)
+    end
+end
+
 function handleCloseBtn(id, name)
     local closeSequence = {
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},

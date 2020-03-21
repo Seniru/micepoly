@@ -45,7 +45,7 @@ end
 
 function Land:setOwner(owner, auctionedPrice)
     if self.owner then
-        error(self.name .. " already has an owner")
+        tfm.exec.chatMessage(self.name .. " already has an owner", owner)
     else
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
@@ -54,6 +54,7 @@ function Land:setOwner(owner, auctionedPrice)
             table.insert(players[owner].ownedLands[self.color], self.landIndex)
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
+        if players[owner].doubles == 0 then changeTurn() end
         --todo: make this more visible
         --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end

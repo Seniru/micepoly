@@ -33,7 +33,7 @@ function Player:getTotalWorth()
     return total
 end
 
-function Player:goTo(land)
+function Player:goTo(land, withDoubles)
     if land == "jail" then
         return self:goToJail()
     end
@@ -42,7 +42,7 @@ function Player:goTo(land)
     if landObj.isSpecial then
         landObj:onLand(self)
         --todo: remove this line after implementing all special cases
-        changeTurn()
+        if not withDoubles then changeTurn() end
     else
         if not landObj.owner then
             ui.addTextArea(11000, "Buy or Auction?", self.name, 300, 100, 100, 100, nil, nil, 1, true)
@@ -52,7 +52,7 @@ function Player:goTo(land)
             local rent = landObj:getRent()
             self:addMoney(-rent)
             players[landObj.owner]:addMoney(rent)
-            changeTurn()
+            if not withDoubles then changeTurn() end
         end
     end
 end
@@ -70,5 +70,6 @@ function Player:goToJail()
     tfm.exec.movePlayer(self.name, points["jail"].x, points["jail"].y, false)
     self.isInJail = true
     self.doubles = 0
+    self.current = 11
     changeTurn()
 end
