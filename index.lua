@@ -724,10 +724,16 @@ end
 
 function changeTurn()
     local curr = currentPlayer
-    local next = getNext(players, currentPlayer)
+    local nextP = getNext(players, currentPlayer)
     ui.updateTextArea(12, "<N2>Roll!</N2>", curr)
-    ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", next)
-    currentPlayer = next
+    if not players[nextP].isInJail then
+        ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", nextP)
+    else
+        ui.addTextArea(15000, "You are in Jail\nPay $500 or roll doubles in your next three turns", nextP, 300, 100, 100, 100, nil, nil, 1, true)
+        ui.addTextArea(15001, "<a href='event:pay-prison'>Pay $500</a>", nextP, 300, 200, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(15002, "<a href='event:roll'>Roll!</a>", nextP, 400, 200, 50, 30, nil, nil, 1, true) 
+    end
+    currentPlayer = nextP
 end
 
 function setUI(target)
@@ -754,8 +760,8 @@ function showLandInfo(id, target)
             --todo
         else
             res = res .. " <i>(" .. land.color .. ")</i>" ..
-                "\nPrice: " .. (land.price or "0") ..
-                "\nOwner:" .. (land.owner or "NA") ..
+            "\nPrice: " .. (land.price or "0") ..
+            "\nOwner:" .. (land.owner or "NA") ..
                 "\nLand rent: " .. (land.landRent or "NA") ..
                 "\nWith 1 house: " .. (land.houseRents[1] or "NA") ..
                 "\nWith 2 houses: " .. (land.houseRents[2] or "NA") ..
@@ -763,9 +769,9 @@ function showLandInfo(id, target)
                 "\nWith 4 houses: " .. (land.houseRents[4] or "NA") ..
                 "\nHotel rent: " .. (land.hotelRent or "NA") ..
                 "\n<i>Mortgaged: " .. tostring(land.isMortgaged)
-        end
+            end
     end
-
+    
     ui.addTextArea(10000, res, target, 280, 100, 300, 200, nil, nil, 1, true)
     --adding extra control buttons for land owners
     if land.owner == target then
@@ -804,10 +810,8 @@ function auctionLand(landId, bid, bidder, newInstance)
     ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
-function handleDice(name)
+function handleDice(name, die1, die2)
     --todo: refactor this function
-    local die1 = 1--math.random(1, 6)
-    local die2 = 1--math.random(1, 6)
     local total = die1 + die2
     ui.updateTextArea(10, die1)
     ui.updateTextArea(11, die2)
@@ -820,9 +824,12 @@ function handleDice(name)
                 players[name].isInJail = false
                 players[name].current = 11 + die1 + die2
                 players[name]:goTo(11 + die1 + die2)
+                handleCloseBtn(15000, name)
             end
         else
             players[name].doubles = 0
+            changeTurn()
+            handleCloseBtn(15000, name)
         end
     else
         players[name].current = players[name].current + total
@@ -849,7 +856,8 @@ function handleCloseBtn(id, name)
     local closeSequence = {
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
         [11002] = {11000, 11001, 11002},
-        [14000] = {14000, 14001, 14002}
+        [14000] = {14000, 14001, 14002},
+        [15000] = {15000, 15001, 15002}
     }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
@@ -867,6 +875,8 @@ end
 function eventChatCommand(name, cmd)
     if cmd:sub(1, 1) == "g" then
         players[name]:goTo(tonumber(cmd:sub(2)))
+    elseif  cmd:sub(1, 1) == "r" then
+        handleDice(name, tonumber(cmd:sub(2, 2)), tonumber(cmd:sub(3, 3)))
     end
 end
 
@@ -954,7 +964,7 @@ function eventPlayerLeft(name)
 end
 function eventTextAreaCallback(id, name, evt)
     if evt == "roll" and name == currentPlayer then
-        handleDice(name)
+        handleDice(name, math.random(1,6), math.random(1, 6))
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "increaseBid" then
@@ -980,6 +990,12 @@ function eventTextAreaCallback(id, name, evt)
         tfm.exec.chatMessage("Paid tax of worth " .. tax, name)
         handleCloseBtn(14000, name)
         --complex events
+    elseif evt == "pay-prison" then
+        players[name]:addMoney(-500)
+        players[name].isInJail = false
+        players[name].current = 11
+        players[name]:goTo(11)
+        handleCloseBtn(15000, name)
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
         --land info display event
