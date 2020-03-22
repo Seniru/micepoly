@@ -1,6 +1,6 @@
 function eventTextAreaCallback(id, name, evt)
     if evt == "roll" and name == currentPlayer then
-        handleDice(name)
+        handleDice(name, math.random(1,6), math.random(1, 6))
     elseif evt == "close" then
         handleCloseBtn(id, name)
     elseif evt == "increaseBid" then
@@ -26,6 +26,12 @@ function eventTextAreaCallback(id, name, evt)
         tfm.exec.chatMessage("Paid tax of worth " .. tax, name)
         handleCloseBtn(14000, name)
         --complex events
+    elseif evt == "pay-prison" then
+        players[name]:addMoney(-500)
+        players[name].isInJail = false
+        players[name].current = 11
+        players[name]:goTo(11)
+        handleCloseBtn(15000, name)
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
         --land info display event
