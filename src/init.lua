@@ -1,6 +1,7 @@
 --game variables
 local points, housePoints, players, lands, chances, communityChests = {}, {}, {}, {}, {}, {}
 local gameStarted = false
+local jailFreeChanceId, jailFreeCommId = nil
 local totalPlayers = 0
 local currentPlayer, currentChance, currentCommunityChest
 

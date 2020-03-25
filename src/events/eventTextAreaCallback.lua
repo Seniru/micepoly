@@ -27,11 +27,11 @@ function eventTextAreaCallback(id, name, evt)
         handleCloseBtn(14000, name)
         --complex events
     elseif evt == "pay-prison" then
-        players[name]:addMoney(-500)
-        players[name].isInJail = false
-        players[name].current = 11
-        players[name]:goTo(11)
-        handleCloseBtn(15000, name)
+        players[name]:jailFree(evt)
+    elseif evt == "jail-free-chance" then
+        players[name]:jailFree(evt)
+    elseif evt == "jail-free-comm" then
+        players[name]:jailFree(evt)
     elseif evt:find("^%w+:%w+$") then
         local key, value = table.unpack(split(evt, ":"))
         --land info display event

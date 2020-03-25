@@ -93,8 +93,12 @@ function initCards()
             player:addMoney(-2000)
         end),
         Chance:new(23, "You won a lottery!", "Collect $2500", function(player)
-            player:addMoney(2500
-        )
+            player:addMoney(2500)
+        end),
+        Chance:new(24, "Get out of Jail free", "This card may be kept until needed or sold.", function(player, land)
+            table.remove(chances, jailFreeChanceId)
+            currentChance = (jailFreeChanceId + 1 > #chances) and 1 or jailFreeChanceId + 1
+            player.hasJailFreeCards["chance"] = true
         end)
         --todo: Add the get out of the jail card after implementing the jail and related featuress
     }
@@ -178,6 +182,11 @@ function initCards()
         CommunityChest:new(24, "Let`s gamble!", "Place your bet", function(player)
             --todo: implement this
             tfm.exec.chatMessage("Not implemented!", player.name)
+        end),
+        CommunityChest:new(25, "Get out of Jail free", "This card may be kept until needed or sold.", function(player)
+            table.remove(communityChests, jailFreeCommId)
+            currentChance = (jailFreeCommId + 1 > #communityChests) and 1 or jailFreeCommId + 1
+            player.hasJailFreeCards["community chest"] = true
         end)
         --todo: Add the get out of the jail card after implementing the jail and related featuress
     }
@@ -185,6 +194,23 @@ function initCards()
     --shuffling the cards
     shuffle(chances)
     shuffle(communityChests)
+    
+    --getting the indexes of jail free cards
+    do
+
+        for id, chance in next, chances do
+            if chance.header == "Get out of Jail free" then
+                jailFreeChanceId = id
+            end
+        end
+
+        for id, commChest in next,  communityChests do
+            if commChest.header == "Get out of Jail free" then
+                jailFreeCommId = id
+            end
+        end
+
+    end
 
 end
 
@@ -238,18 +264,24 @@ function initLands()
     
     local chanceFn = function(land, player)
         local curr = currentChance
-        local next = getNext(chances, curr)
-        chances[next]:action(player, land)
-        ui.addTextArea(12000, "Chance: " .. chances[next].header .. "<br>" .. chances[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
-        currentChance = next
+        local success, nextC = pcall(getNext, chances, curr)
+        if not success then
+            nextC = 1
+        end
+        ui.addTextArea(12000, "Chance: " .. chances[nextC].header .. "<br>" .. chances[nextC].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        chances[nextC]:action(player, land)
+        currentChance = nextC
     end
 
     local commChestFn = function(land, player)
         local curr = currentCommunitychest
-        local next = getNext(communityChests, curr)
-        communityChests[next]:action(player, land)
-        ui.addTextArea(12000, "Community Chest: " .. communityChests[next].header .. "<br>" .. communityChests[next].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
-        currentCommunitychest = next
+        local success, nextC = pcall(getNext, communityChests, curr)
+        if not success then
+            nextC = 1
+        end
+        ui.addTextArea(12000, "Community Chest: " .. communityChests[nextC].header .. "<br>" .. communityChests[nextC].description, player.name, 200, 200, 200, 50, nil, nil, 1, true)
+        communityChests[nextC]:action(player, land)
+        currentCommunitychest = nextC
     end
     
     --overriding the behaviours of special lands
@@ -310,9 +342,11 @@ function changeTurn()
     if not players[nextP].isInJail then
         ui.updateTextArea(12, "<a href='event:roll'>Roll!</a>", nextP)
     else
-        ui.addTextArea(15000, "You are in Jail\nPay $500 or roll doubles in your next three turns", nextP, 300, 100, 100, 100, nil, nil, 1, true)
+        ui.addTextArea(15000, "You are in Jail\nPay $500, Use jail card or roll doubles in your next three turns", nextP, 300, 100, 100, 100, nil, nil, 1, true)
         ui.addTextArea(15001, "<a href='event:pay-prison'>Pay $500</a>", nextP, 300, 200, 50, 30, nil, nil, 1, true)
-        ui.addTextArea(15002, "<a href='event:roll'>Roll!</a>", nextP, 400, 200, 50, 30, nil, nil, 1, true) 
+        ui.addTextArea(15002, "<a href='event:roll'>Roll!</a>", nextP, 400, 200, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(15003, "<a href='event:jail-free-chance'>Use Jail Chance</a>", nextP, 500, 200, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(15004, "<a href='event:jail-free-comm'>Use Jail community</a>", nextP, 550, 200, 50, 30, nil, nil, 1, true)
     end
     currentPlayer = nextP
 end
@@ -438,7 +472,7 @@ function handleCloseBtn(id, name)
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
         [11002] = {11000, 11001, 11002},
         [14000] = {14000, 14001, 14002},
-        [15000] = {15000, 15001, 15002}
+        [15000] = {15000, 15001, 15002, 15003, 15004}
     }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
