@@ -12,6 +12,47 @@ local lobby = [[<C><P /><Z><S><S X="401" Y="396" T="0" L="804" H="20" P="0,0,0.3
 
 --==[[ libs ]]==--
 
+function split(s, delimiter)
+    result = {}
+    for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+        table.insert(result, match)
+    end
+    return result
+end
+
+function shuffle(tbl)
+    math.randomseed(os.time())
+    for i = 1, #tbl do
+        local j = math.random(i)
+        tbl[i], tbl[j] = tbl[j], tbl[i]
+    end
+end
+
+function getNext(tbl, current)
+    return next(tbl, current) or next(tbl)
+end
+
+function table.tostring(tbl, depth)
+    local res = "{"
+    local prev = 0
+    for k, v in next, tbl do
+        if type(v) == "table" then
+            if depth == nil or depth > 0 then
+                res =
+                    res ..
+                    ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") ..
+                        table.tostring(v, depth and depth - 1 or nil) .. ", "
+            else
+                res = res .. k .. ":  {...}, "
+            end
+        else
+            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") .. tostring(v) .. ", "
+        end
+        prev = type(k) == "number" and k or nil
+    end
+    return res:sub(1, res:len() - 2) .. "}"
+end
+
 --game variables
 local points, housePoints, players, lands, chances, communityChests = {}, {}, {}, {}, {}, {}
 local gameStarted = false
@@ -426,46 +467,37 @@ function Land:onLand(player, ...)
     return false
 end
 
-function split(s, delimiter)
-    result = {}
-    for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
-        table.insert(result, match)
-    end
-    return result
+--[[ Trade class ]]--
+local Trade = {}
+Trade.__index = Trade
+Trade.__tostring = function(self)
+    return table.tostring(self)
 end
 
-function shuffle(tbl)
-    math.randomseed(os.time())
-    for i = 1, #tbl do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
-    end
+Trade.trades = {}
+
+setmetatable(Trade, {
+    __call = function (cls, name)
+        return cls.new(name)
+    end,
+})
+
+function Trade.new(id, party1, party2)
+    local self = setmetatable({}, Trade)
+    self.party1 = {
+        name = party1, lands = {}, teleporters = {}, utilities = {}, hasJailFreeCommu = false, hasJailFreeChance = false, money = 0
+    }
+    self.party2 = {
+        name = party1, lands = {}, teleporters = {}, utilities = {}, hasJailFreeCommu = false, hasJailFreeChance = false, money = 0
+    }
+    Trade.trades[id] = self
+    return self
 end
 
-function getNext(tbl, current)
-    return next(tbl, current) or next(tbl)
-end
-
-function table.tostring(tbl, depth)
-    local res = "{"
-    local prev = 0
-    for k, v in next, tbl do
-        if type(v) == "table" then
-            if depth == nil or depth > 0 then
-                res =
-                    res ..
-                    ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") ..
-                        table.tostring(v, depth and depth - 1 or nil) .. ", "
-            else
-                res = res .. k .. ":  {...}, "
-            end
-        else
-            res = res .. ((type(k) == "number" and prev and prev + 1 == k) and "" or k .. ": ") .. tostring(v) .. ", "
-        end
-        prev = type(k) == "number" and k or nil
-    end
-    return res:sub(1, res:len() - 2) .. "}"
-end
+--[[function Trade:addLand(party, landId)
+    local party = self.party1.name == party and self.party1 or self.party2
+    party.lands[#party.lands + 1] = landId
+end]]
 
 
 --==[[ main ]]==--
