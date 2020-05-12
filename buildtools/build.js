@@ -28,6 +28,7 @@ combine({
     },
     libs: {
         files: [
+            "libs/utils.lua",
             "src/init.lua",
             "libs/timers4tfm.lua",
             "libs/Card.lua",
@@ -35,7 +36,7 @@ combine({
             "libs/CommunityChest.lua",
             "libs/Player.lua",
             "libs/Land.lua",
-            "libs/utils.lua"
+            "libs/Trade.lua"
         ]
     },
     main: {
