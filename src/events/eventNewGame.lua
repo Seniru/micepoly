@@ -54,7 +54,7 @@ function eventNewGame()
                 tfm.exec.newGame(map)
                 setUI()
                 --todo: set this 10 seconds
-            end, 4000, false)
+            end, 4000 + 2000 --[[initial 2 seconds to load the map]], false)
         end
     end
 

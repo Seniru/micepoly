@@ -1,3 +1,3 @@
 function eventLoop(tc, tr)
-    Timer.run(tc)
+    Timer.process()
 end
