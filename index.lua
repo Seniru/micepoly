@@ -192,7 +192,7 @@ end
 function Player:getTotalWorth()
     local total = self.money
     for cat, ownedLands in next, self.ownedLands do
-        for _, landId in next, ownedLands do
+        for landId, name in next, ownedLands do
             local land = lands[landId]
             total = total + land.price + (land.houses + (land.hasHotel and 1 or 0)) * land.buildCost
         end
@@ -334,9 +334,10 @@ function Land:setOwner(owner, auctionedPrice)
     else
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
-            players[owner].ownedLands[self.color] = {self.landIndex}
+            players[owner].ownedLands[self.color] = {[self.landIndex] = self.name, _lands = 1}
         else
-            table.insert(players[owner].ownedLands[self.color], self.landIndex)
+            players[owner].ownedLands[self.color][self.landIndex] = self.name
+            players[owner].ownedLands[self.color]._lands = players[owner].ownedLands[self.color]._lands + 1
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
         if players[owner].doubles == 0 then changeTurn() end
@@ -406,7 +407,7 @@ function Land:getRent()
         return 0
     end
 
-    if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
+    if players[self.owner].ownedLands[self.color]._lands == #landCategories[self.color] then
         if self.hasHotel then
             return self.hotelRent
         elseif self.houses > 0 then
@@ -929,6 +930,11 @@ function auctionLand(landId, bid, bidder, newInstance)
     ui.addTextArea(13000, "Auctioning " .. land.name .."!\nPlace your bid\n" .. auctions.highest + 1 .. " <a href='event:increaseBid'>[ + ]</a>\n<a href='event:bid'>[ Bid ]</a> <a href='event:fold'>[ Fold ]</a>", auctions.currentBidder, 100, 100, 100, 100, nil, nil, 1, true)
 end
 
+function startTrade(party1, party2)
+    print(table.tostring(players[party1].ownedLands))
+    print(table.tostring(players[party2].ownedLands))
+end
+
 function handleDice(name, die1, die2)
     --todo: refactor this function
     local total = die1 + die2
@@ -994,8 +1000,12 @@ end
 function eventChatCommand(name, cmd)
     if cmd:sub(1, 1) == "g" then
         players[name]:goTo(tonumber(cmd:sub(2)))
-    elseif  cmd:sub(1, 1) == "r" then
+    elseif cmd:sub(1, 1) == "r" then
         handleDice(name, tonumber(cmd:sub(2, 2)), tonumber(cmd:sub(3, 3)))
+    elseif cmd == "t" then
+        startTrade(name, "Overforyou#9290")
+    elseif cmd == "test" then
+        print(table.tostring(players[name]))
     end
 end
 
