@@ -49,9 +49,10 @@ function Land:setOwner(owner, auctionedPrice)
     else
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
-            players[owner].ownedLands[self.color] = {self.landIndex}
+            players[owner].ownedLands[self.color] = {[self.landIndex] = self.name, _lands = 1}
         else
-            table.insert(players[owner].ownedLands[self.color], self.landIndex)
+            players[owner].ownedLands[self.color][self.landIndex] = self.name
+            players[owner].ownedLands[self.color]._lands = players[owner].ownedLands[self.color]._lands + 1
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
         if players[owner].doubles == 0 then changeTurn() end
@@ -121,7 +122,7 @@ function Land:getRent()
         return 0
     end
 
-    if #players[self.owner].ownedLands[self.color] == #landCategories[self.color] then
+    if players[self.owner].ownedLands[self.color]._lands == #landCategories[self.color] then
         if self.hasHotel then
             return self.hotelRent
         elseif self.houses > 0 then

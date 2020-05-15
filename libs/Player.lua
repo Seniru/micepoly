@@ -35,7 +35,7 @@ end
 function Player:getTotalWorth()
     local total = self.money
     for cat, ownedLands in next, self.ownedLands do
-        for _, landId in next, ownedLands do
+        for landId, name in next, ownedLands do
             local land = lands[landId]
             total = total + land.price + (land.houses + (land.hasHotel and 1 or 0)) * land.buildCost
         end
