@@ -476,6 +476,7 @@ Trade.__tostring = function(self)
 end
 
 Trade.trades = {}
+Trade.handshakes = {}
 
 setmetatable(Trade, {
     __call = function (cls, name)
@@ -931,8 +932,35 @@ function auctionLand(landId, bid, bidder, newInstance)
 end
 
 function startTrade(party1, party2)
-    print(table.tostring(players[party1].ownedLands))
-    print(table.tostring(players[party2].ownedLands))
+    tfm.exec.chatMessage(party2 .. " accepted the trade invitation!", party1)
+    local tradeId = party1 .. "," .. party2
+    local trade = Trade.new(tradeId, party1, party2)
+    local player1 = players[party1]
+    local player2 = players[party2]
+    local p1Txt = "[" .. party1 .. "]\n"
+    local p2Txt = "[" .. party2 .. "]\n"
+    local col = lands[2].color
+    for id, land in next, lands do
+        if not land.isSpecial then
+            if land.color ~= col then
+                col = land.color
+                p1Txt = p1Txt .. "\n" ..col
+                p2Txt = p2Txt .. "\n" .. col
+            end
+            local p1Owns = not not (player1.ownedLands[col] and player1.ownedLands[col][id])
+            local p2Owns = not not (player2.ownedLands[col] and player2.ownedLands[col][id])
+            p1Txt = p1Txt .. (p1Owns and "<VP>" or "<N2>") .. land.name .. (p1Owns and "</VP>" or "</N2>") .. ", "
+            p2Txt = p2Txt .. (p2Owns and "<VP>" or "<N2>") .. land.name .. (p2Owns and "</VP>" or "</N2>") .. ", "
+        end
+    end
+    print(p1Txt)
+    print(p2Txt)
+    for _, player in next, ({party1, party2}) do
+        ui.addTextArea(200, player == party1 and p1Txt or p2Txt, player, 100, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(201, player == party1 and p2Txt or p1Txt, player, 500, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
+    end
 end
 
 function handleDice(name, die1, die2)
@@ -997,13 +1025,17 @@ function main()
     tfm.exec.newGame(lobby)
 end
 
-function eventChatCommand(name, cmd)
+function eventChatCommand(name, cmd) -- test
     if cmd:sub(1, 1) == "g" then
         players[name]:goTo(tonumber(cmd:sub(2)))
     elseif cmd:sub(1, 1) == "r" then
         handleDice(name, tonumber(cmd:sub(2, 2)), tonumber(cmd:sub(3, 3)))
     elseif cmd == "t" then
-        startTrade(name, "Overforyou#9290")
+        -- trade start
+        local party1 = name
+        local party2 = "Overforyou#9290"
+        Trade.handshakes[#Trade.handshakes + 1] = party1
+        ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then
         print(table.tostring(players[name]))
     end
@@ -1166,6 +1198,15 @@ function eventTextAreaCallback(id, name, evt)
     end
 end
 
+function eventPopupAnswer(id, name, answer)
+    if id >= 100000 then -- trade agreements/handshakes
+        print("trade handshake")
+        local tradeId = id - 100000
+        local party1 = Trade.handshakes[tradeId]
+        local party2 = name
+        startTrade(party1, party2)
+    end
+end
 function eventLoop(tc, tr)
     Timer.process()
 end
