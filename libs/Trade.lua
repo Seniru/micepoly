@@ -6,6 +6,7 @@ Trade.__tostring = function(self)
 end
 
 Trade.trades = {}
+Trade.handshakes = {}
 
 setmetatable(Trade, {
     __call = function (cls, name)

@@ -428,6 +428,24 @@ end
 function startTrade(party1, party2)
     print(table.tostring(players[party1].ownedLands))
     print(table.tostring(players[party2].ownedLands))
+    tfm.exec.chatMessage(party2 .. " accepted the trade invitation!", party1)
+    local tradeId = party1 .. "," .. party2
+
+    local trade = Trade.new(tradeId, party1, party2)
+
+    for _, player in next, ({party1, party2}) do
+        local landTxt = ""
+        for cat, lands in next, players[player].ownedLands do
+            landTxt = landTxt .. cat .. "\n\n"
+            for id, name in next, lands do
+                if id ~= "_lands" then
+                    landTxt = landTxt .. name .. "(" .. id .. ")"
+                end
+            end
+        end
+        ui.addTextArea(200, "My lands [" .. player .. "]\n" .. landTxt, player, 100, 100, 300, 300, nil, nil, 1, true)
+        ui.addTextArea(201, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 450, 150, 100, 100, nil, nil, 1, true)
+    end
 end
 
 function handleDice(name, die1, die2)
@@ -492,13 +510,17 @@ function main()
     tfm.exec.newGame(lobby)
 end
 
-function eventChatCommand(name, cmd)
+function eventChatCommand(name, cmd) -- test
     if cmd:sub(1, 1) == "g" then
         players[name]:goTo(tonumber(cmd:sub(2)))
     elseif cmd:sub(1, 1) == "r" then
         handleDice(name, tonumber(cmd:sub(2, 2)), tonumber(cmd:sub(3, 3)))
     elseif cmd == "t" then
-        startTrade(name, "Overforyou#9290")
+        -- trade start
+        local party1 = name
+        local party2 = "Overforyou#9290"
+        Trade.handshakes[#Trade.handshakes + 1] = party1
+        ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then
         print(table.tostring(players[name]))
     end

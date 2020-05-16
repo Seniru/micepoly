@@ -50,6 +50,7 @@ combine({
             "src/events/eventNewPlayer.lua",
             "src/events/eventPlayerLeft.lua",
             "src/events/eventTextAreaCallback.lua",
+            "src/events/eventPopupAnswer.lua",
             "src/events/eventLoop.lua",
         ]
     }
