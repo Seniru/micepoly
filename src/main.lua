@@ -429,7 +429,8 @@ function startTrade(party1, party2)
     tfm.exec.chatMessage(party2 .. " accepted the trade invitation!", party1)
     local tradeId = party1 .. "," .. party2
     local trade = Trade.new(tradeId, party1, party2)
-
+    local player1 = players[party1]
+    local player2 = players[party2]
     local p1Txt = "[" .. party1 .. "]\n"
     local p2Txt = "[" .. party2 .. "]\n"
     local col = lands[2].color
@@ -437,11 +438,13 @@ function startTrade(party1, party2)
         if not land.isSpecial then
             if land.color ~= col then
                 col = land.color
-                p1Txt = p1Txt .. col .. "\n"
-                p2Txt = p2Txt .. col .. "\n"
+                p1Txt = p1Txt .. "\n" ..col
+                p2Txt = p2Txt .. "\n" .. col
             end
-            p1Txt = p1Txt .. land.name .. ", "
-            p2Txt = p2Txt .. land.name .. ", "
+            local p1Owns = not not (player1.ownedLands[col] and player1.ownedLands[col][id])
+            local p2Owns = not not (player2.ownedLands[col] and player2.ownedLands[col][id])
+            p1Txt = p1Txt .. (p1Owns and "<VP>" or "<N2>") .. land.name .. (p1Owns and "</VP>" or "</N2>") .. ", "
+            p2Txt = p2Txt .. (p2Owns and "<VP>" or "<N2>") .. land.name .. (p2Owns and "</VP>" or "</N2>") .. ", "
         end
     end
     print(p1Txt)
