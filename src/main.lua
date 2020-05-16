@@ -426,25 +426,31 @@ function auctionLand(landId, bid, bidder, newInstance)
 end
 
 function startTrade(party1, party2)
-    print(table.tostring(players[party1].ownedLands))
-    print(table.tostring(players[party2].ownedLands))
     tfm.exec.chatMessage(party2 .. " accepted the trade invitation!", party1)
     local tradeId = party1 .. "," .. party2
-
     local trade = Trade.new(tradeId, party1, party2)
 
-    for _, player in next, ({party1, party2}) do
-        local landTxt = ""
-        for cat, lands in next, players[player].ownedLands do
-            landTxt = landTxt .. cat .. "\n\n"
-            for id, name in next, lands do
-                if id ~= "_lands" then
-                    landTxt = landTxt .. name .. "(" .. id .. ")"
-                end
+    local p1Txt = "[" .. party1 .. "]\n"
+    local p2Txt = "[" .. party2 .. "]\n"
+    local col = lands[2].color
+    for id, land in next, lands do
+        if not land.isSpecial then
+            if land.color ~= col then
+                col = land.color
+                p1Txt = p1Txt .. col .. "\n"
+                p2Txt = p2Txt .. col .. "\n"
             end
+            p1Txt = p1Txt .. land.name .. ", "
+            p2Txt = p2Txt .. land.name .. ", "
         end
-        ui.addTextArea(200, "My lands [" .. player .. "]\n" .. landTxt, player, 100, 100, 300, 300, nil, nil, 1, true)
-        ui.addTextArea(201, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 450, 150, 100, 100, nil, nil, 1, true)
+    end
+    print(p1Txt)
+    print(p2Txt)
+    for _, player in next, ({party1, party2}) do
+        ui.addTextArea(200, player == party1 and p1Txt or p2Txt, player, 100, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(201, player == party1 and p2Txt or p1Txt, player, 500, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
     end
 end
 
