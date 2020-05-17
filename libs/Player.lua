@@ -25,6 +25,7 @@ function Player.new(name)
     self.current = 1
     self.isInJail = false
     self.doubles = 0
+    self.tradeID = nil
     self.hasJailFreeCards = {
         ["chance"] = false,
         ["community chest"] = false

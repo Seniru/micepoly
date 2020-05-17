@@ -441,14 +441,13 @@ function startTrade(party1, party2)
                 p1Txt = p1Txt .. "\n" ..col
                 p2Txt = p2Txt .. "\n" .. col
             end
+            -- todo: create another string to displayed to the other party so that they can't add lands to the trade 
             local p1Owns = not not (player1.ownedLands[col] and player1.ownedLands[col][id])
             local p2Owns = not not (player2.ownedLands[col] and player2.ownedLands[col][id])
-            p1Txt = p1Txt .. (p1Owns and "<VP>" or "<N2>") .. land.name .. (p1Owns and "</VP>" or "</N2>") .. ", "
-            p2Txt = p2Txt .. (p2Owns and "<VP>" or "<N2>") .. land.name .. (p2Owns and "</VP>" or "</N2>") .. ", "
+            p1Txt = p1Txt .. (p1Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p1Owns and "</a></VP>" or "</N2>") .. ", "
+            p2Txt = p2Txt .. (p2Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p2Owns and "</a></VP>" or "</N2>") .. ", "
         end
     end
-    print(p1Txt)
-    print(p2Txt)
     for _, player in next, ({party1, party2}) do
         ui.addTextArea(200, player == party1 and p1Txt or p2Txt, player, 100, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(201, player == party1 and p2Txt or p1Txt, player, 500, 60, 250, 200, nil, nil, 1, true)

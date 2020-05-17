@@ -71,6 +71,8 @@ function eventTextAreaCallback(id, name, evt)
             showLandInfo(land.landIndex, name)
         elseif key == "trade-cancel" then
             Trade.trades[value]:cancel(name)
+        elseif key == "trade-addLand" then
+            Trade.trades[players[name].tradeID]:addLand(name, value)
         end
     end
 end
