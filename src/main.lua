@@ -500,12 +500,6 @@ function handleDice(name, die1, die2)
 end
 
 function handleCloseBtn(id, name)
-    local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
-        [11002] = {11000, 11001, 11002},
-        [14000] = {14000, 14001, 14002},
-        [15000] = {15000, 15001, 15002, 15003, 15004}
-    }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
             ui.removeTextArea(id, name)
@@ -527,7 +521,7 @@ function eventChatCommand(name, cmd) -- test
     elseif cmd == "t" then
         -- trade start
         local party1 = name
-        local party2 = "Overforyou#9290"
+        local party2 = "Senirupasan#0000"
         Trade.handshakes[#Trade.handshakes + 1] = party1
         ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then

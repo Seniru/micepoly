@@ -32,7 +32,7 @@ function eventTextAreaCallback(id, name, evt)
         players[name]:jailFree(evt)
     elseif evt == "jail-free-comm" then
         players[name]:jailFree(evt)
-    elseif evt:find("^%w+:%w+$") then
+    elseif evt:find("^.+:.+$") then
         local key, value = table.unpack(split(evt, ":"))
         --land info display event
         if key == "land" then
@@ -69,6 +69,8 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:mortgage(false)
             showLandInfo(land.landIndex, name)
+        elseif key == "trade-cancel" then
+            Trade.trades[value]:cancel(name)
         end
     end
 end
