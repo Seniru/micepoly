@@ -76,6 +76,15 @@ local landCategories = {
     ["dark blue"] = {38, 40}
 }
 
+-- text area ids to remove on close events
+local closeSequence = {
+        [200] = {200, 201, 202, 203},
+        [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
+        [11002] = {11000, 11001, 11002},
+        [14000] = {14000, 14001, 14002},
+        [15000] = {15000, 15001, 15002, 15003, 15004}
+    }
+
 local auctions
 
 --Timers4TFm
@@ -182,6 +191,7 @@ function Player.new(name)
     self.current = 1
     self.isInJail = false
     self.doubles = 0
+    self.tradeID = nil
     self.hasJailFreeCards = {
         ["chance"] = false,
         ["community chest"] = false
@@ -486,20 +496,37 @@ setmetatable(Trade, {
 
 function Trade.new(id, party1, party2)
     local self = setmetatable({}, Trade)
+    self.id = id
     self.party1 = {
         name = party1, lands = {}, teleporters = {}, utilities = {}, hasJailFreeCommu = false, hasJailFreeChance = false, money = 0
     }
     self.party2 = {
-        name = party1, lands = {}, teleporters = {}, utilities = {}, hasJailFreeCommu = false, hasJailFreeChance = false, money = 0
+        name = party2, lands = {}, teleporters = {}, utilities = {}, hasJailFreeCommu = false, hasJailFreeChance = false, money = 0
     }
+    players[party1].tradeID = id
+    players[party2].tradeID = id
     Trade.trades[id] = self
     return self
 end
 
---[[function Trade:addLand(party, landId)
-    local party = self.party1.name == party and self.party1 or self.party2
-    party.lands[#party.lands + 1] = landId
-end]]
+
+function Trade:addLand(player, landId, add)
+    add = add == nil and true or add
+    local party = player == self.party1.name and 1 or 2
+    self["party" .. party].lands[landId] = add and true or nil
+    print(table.tostring(self))
+end
+
+function Trade:cancel(cancelledBy)
+    tfm.exec.chatMessage("You cancelled the trade!", cancelledBy)
+    tfm.exec.chatMessage("The trade has been cancelled by " .. cancelledBy, self.party1.name == cancelledBy and self.party2.name or self.party1.name)
+    handleCloseBtn(200, self.party1.name)
+    handleCloseBtn(200, self.party2.name)
+    players[self.party1.name].tradeID = nil
+    players[self.party2.name].tradeID = nil
+    Trade.trades[self.id] = nil
+    self = nil
+end
 
 
 --==[[ main ]]==--
@@ -947,14 +974,13 @@ function startTrade(party1, party2)
                 p1Txt = p1Txt .. "\n" ..col
                 p2Txt = p2Txt .. "\n" .. col
             end
+            -- todo: create another string to displayed to the other party so that they can't add lands to the trade 
             local p1Owns = not not (player1.ownedLands[col] and player1.ownedLands[col][id])
             local p2Owns = not not (player2.ownedLands[col] and player2.ownedLands[col][id])
-            p1Txt = p1Txt .. (p1Owns and "<VP>" or "<N2>") .. land.name .. (p1Owns and "</VP>" or "</N2>") .. ", "
-            p2Txt = p2Txt .. (p2Owns and "<VP>" or "<N2>") .. land.name .. (p2Owns and "</VP>" or "</N2>") .. ", "
+            p1Txt = p1Txt .. (p1Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p1Owns and "</a></VP>" or "</N2>") .. ", "
+            p2Txt = p2Txt .. (p2Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p2Owns and "</a></VP>" or "</N2>") .. ", "
         end
     end
-    print(p1Txt)
-    print(p2Txt)
     for _, player in next, ({party1, party2}) do
         ui.addTextArea(200, player == party1 and p1Txt or p2Txt, player, 100, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(201, player == party1 and p2Txt or p1Txt, player, 500, 60, 250, 200, nil, nil, 1, true)
@@ -1006,12 +1032,6 @@ function handleDice(name, die1, die2)
 end
 
 function handleCloseBtn(id, name)
-    local closeSequence = {
-        [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
-        [11002] = {11000, 11001, 11002},
-        [14000] = {14000, 14001, 14002},
-        [15000] = {15000, 15001, 15002, 15003, 15004}
-    }
     if closeSequence[id] then
         for _, id in next, closeSequence[id] do
             ui.removeTextArea(id, name)
@@ -1033,7 +1053,7 @@ function eventChatCommand(name, cmd) -- test
     elseif cmd == "t" then
         -- trade start
         local party1 = name
-        local party2 = "Overforyou#9290"
+        local party2 = "Senirupasan#0000"
         Trade.handshakes[#Trade.handshakes + 1] = party1
         ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then
@@ -1157,7 +1177,7 @@ function eventTextAreaCallback(id, name, evt)
         players[name]:jailFree(evt)
     elseif evt == "jail-free-comm" then
         players[name]:jailFree(evt)
-    elseif evt:find("^%w+:%w+$") then
+    elseif evt:find("^.+:.+$") then
         local key, value = table.unpack(split(evt, ":"))
         --land info display event
         if key == "land" then
@@ -1194,6 +1214,10 @@ function eventTextAreaCallback(id, name, evt)
             local land = lands[tonumber(value)]
             land:mortgage(false)
             showLandInfo(land.landIndex, name)
+        elseif key == "trade-cancel" then
+            Trade.trades[value]:cancel(name)
+        elseif key == "trade-addLand" then
+            Trade.trades[players[name].tradeID]:addLand(name, value)
         end
     end
 end
