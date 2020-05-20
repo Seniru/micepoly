@@ -336,7 +336,9 @@ function Land.new(data)
     return self
 end
 
-function Land:removeOwner(owner)
+function Land:removeOwner()
+    players[self.owner].ownedLands[self.color][self.landIndex] = nil
+    players[self.owner].ownedLands[self.color]._lands = players[self.owner].ownedLands[self.color]._lands - 1
     self.owner = nil
 end
 
@@ -352,7 +354,7 @@ function Land:setOwner(owner, auctionedPrice)
             players[owner].ownedLands[self.color]._lands = players[owner].ownedLands[self.color]._lands + 1
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
-        if players[owner].doubles == 0 then changeTurn() end
+        -- if players[owner].doubles == 0 then changeTurn() end
         --todo: make this more visible
         --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
@@ -555,10 +557,12 @@ function Trade:addLand(player, landId, add)
     self:updateInterface()
 end
 
-function Trade:cancel(cancelledBy)
-    print("[trade] cancel")
-    tfm.exec.chatMessage("You cancelled the trade!", cancelledBy)
-    tfm.exec.chatMessage("The trade has been cancelled by " .. cancelledBy, self.party1.name == cancelledBy and self.party2.name or self.party1.name)
+function Trade:close(closedBy)
+    print("[trade] close")
+    if closedBy then
+        tfm.exec.chatMessage("You cancelled the trade!", closedBy)
+        tfm.exec.chatMessage("The trade has been cancelled by " .. closedBy, self.party1.name == closeBy and self.party2.name or self.party1.name)
+    end
     handleCloseBtn(200, self.party1.name)
     handleCloseBtn(200, self.party2.name)
     players[self.party1.name].tradeID = nil
@@ -572,7 +576,20 @@ function Trade:submit(submittedBy)
     local party = submittedBy == self.party1.name and 1 or 2
     self["party" .. party].submitted = true
     if self.party1.submitted and self.party2.submitted then
-        tfm.exec.chatMessage("both submitted, but it was a troll!")
+        -- both parties submitted, start the transaction
+        for party, partyData in next, ({self.party1, self.party2}) do
+            -- exchanging lands
+            local partyName = partyData.name
+            local otherName = partyName == self.party1.name and self.party2.name or self.party1.name
+            print(partyName)
+            print(otherName)
+            for landID, _ in next, partyData.lands do
+                lands[landID]:removeOwner()
+                lands[landID]:setOwner(otherName, 0)
+                print("changed owners" .. landID)
+            end
+        end
+        self:close()
     end
 end
 
@@ -1088,6 +1105,8 @@ function eventChatCommand(name, cmd) -- test
         ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then
         print(table.tostring(players[name]))
+    elseif cmd == "p" then
+        tfm.exec.chatMessage(table.tostring(players[name]), name)
     end
 end
 
@@ -1189,6 +1208,7 @@ function eventTextAreaCallback(id, name, evt)
         if auctions.totalBidders == 1 then
             lands[auctions.landId]:setOwner(auctions.highestBidder, auctions.highest)
             auctions = nil
+            if players[name].doubles == 0 then changeTurn() end
         end
         ui.removeTextArea(id)
     elseif evt == "incomeTaxFull" then
@@ -1218,6 +1238,7 @@ function eventTextAreaCallback(id, name, evt)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
             ui.removeTextArea(11002, name)
+            if players[name].doubles == 0 then changeTurn() end
         elseif key == "addHouse" then
             local land = lands[tonumber(value)]
             if land.houses < 4 then
@@ -1245,7 +1266,7 @@ function eventTextAreaCallback(id, name, evt)
             land:mortgage(false)
             showLandInfo(land.landIndex, name)
         elseif key == "trade-cancel" then
-            Trade.trades[value]:cancel(name)
+            Trade.trades[value]:close(name)
         elseif key == "trade-addLand" then
             Trade.trades[players[name].tradeID]:addLand(name, tonumber(value))
         elseif key == "trade-submit" then
