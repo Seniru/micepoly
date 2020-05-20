@@ -14,6 +14,7 @@ function eventTextAreaCallback(id, name, evt)
         if auctions.totalBidders == 1 then
             lands[auctions.landId]:setOwner(auctions.highestBidder, auctions.highest)
             auctions = nil
+            if players[name].doubles == 0 then changeTurn() end
         end
         ui.removeTextArea(id)
     elseif evt == "incomeTaxFull" then
@@ -43,6 +44,7 @@ function eventTextAreaCallback(id, name, evt)
             ui.removeTextArea(11000, name)
             ui.removeTextArea(11001, name)
             ui.removeTextArea(11002, name)
+            if players[name].doubles == 0 then changeTurn() end
         elseif key == "addHouse" then
             local land = lands[tonumber(value)]
             if land.houses < 4 then
@@ -70,7 +72,7 @@ function eventTextAreaCallback(id, name, evt)
             land:mortgage(false)
             showLandInfo(land.landIndex, name)
         elseif key == "trade-cancel" then
-            Trade.trades[value]:cancel(name)
+            Trade.trades[value]:close(name)
         elseif key == "trade-addLand" then
             Trade.trades[players[name].tradeID]:addLand(name, tonumber(value))
         elseif key == "trade-submit" then

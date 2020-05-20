@@ -507,5 +507,7 @@ function eventChatCommand(name, cmd) -- test
         ui.addPopup(100000 + #Trade.handshakes, 1, party1 .. " wants to trade with you no.\nAccept?", party2, nil, nil, nil, true)
     elseif cmd == "test" then
         print(table.tostring(players[name]))
+    elseif cmd == "p" then
+        tfm.exec.chatMessage(table.tostring(players[name]), name)
     end
 end

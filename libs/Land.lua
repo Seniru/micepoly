@@ -39,7 +39,9 @@ function Land.new(data)
     return self
 end
 
-function Land:removeOwner(owner)
+function Land:removeOwner()
+    players[self.owner].ownedLands[self.color][self.landIndex] = nil
+    players[self.owner].ownedLands[self.color]._lands = players[self.owner].ownedLands[self.color]._lands - 1
     self.owner = nil
 end
 
@@ -55,7 +57,7 @@ function Land:setOwner(owner, auctionedPrice)
             players[owner].ownedLands[self.color]._lands = players[owner].ownedLands[self.color]._lands + 1
         end
         players[owner]:addMoney(-(auctionedPrice or self.price))
-        if players[owner].doubles == 0 then changeTurn() end
+        -- if players[owner].doubles == 0 then changeTurn() end
         --todo: make this more visible
         --ui.addTextArea(1000000 + self.landIndex, "<a href='event:addHouse:" .. self.landIndex .. "'>[ + ]</a>", owner, self.locX, self.locY, 20, 20, nil, nil, 0.5, true)
     end
