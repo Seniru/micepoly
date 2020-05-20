@@ -1,3 +1,5 @@
+math.randomseed(os.time())
+
 --game variables
 local points, housePoints, players, lands, chances, communityChests = {}, {}, {}, {}, {}, {}
 local gameStarted = false

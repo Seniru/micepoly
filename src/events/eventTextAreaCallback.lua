@@ -72,7 +72,9 @@ function eventTextAreaCallback(id, name, evt)
         elseif key == "trade-cancel" then
             Trade.trades[value]:cancel(name)
         elseif key == "trade-addLand" then
-            Trade.trades[players[name].tradeID]:addLand(name, value)
+            Trade.trades[players[name].tradeID]:addLand(name, tonumber(value))
+        elseif key == "trade-submit" then
+            Trade.trades[value]:submit(name)
         end
     end
 end

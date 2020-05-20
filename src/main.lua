@@ -429,31 +429,13 @@ function startTrade(party1, party2)
     tfm.exec.chatMessage(party2 .. " accepted the trade invitation!", party1)
     local tradeId = party1 .. "," .. party2
     local trade = Trade.new(tradeId, party1, party2)
-    local player1 = players[party1]
-    local player2 = players[party2]
-    local p1Txt = "[" .. party1 .. "]\n"
-    local p2Txt = "[" .. party2 .. "]\n"
-    local col = lands[2].color
-    for id, land in next, lands do
-        if not land.isSpecial then
-            if land.color ~= col then
-                col = land.color
-                p1Txt = p1Txt .. "\n" ..col
-                p2Txt = p2Txt .. "\n" .. col
-            end
-            -- todo: create another string to displayed to the other party so that they can't add lands to the trade 
-            local p1Owns = not not (player1.ownedLands[col] and player1.ownedLands[col][id])
-            local p2Owns = not not (player2.ownedLands[col] and player2.ownedLands[col][id])
-            p1Txt = p1Txt .. (p1Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p1Owns and "</a></VP>" or "</N2>") .. ", "
-            p2Txt = p2Txt .. (p2Owns and "<VP><a href='event:trade-addLand:" .. id .. "'>" or "<N2>") .. land.name .. (p2Owns and "</a></VP>" or "</N2>") .. ", "
-        end
-    end
     for _, player in next, ({party1, party2}) do
-        ui.addTextArea(200, player == party1 and p1Txt or p2Txt, player, 100, 60, 250, 200, nil, nil, 1, true)
-        ui.addTextArea(201, player == party1 and p2Txt or p1Txt, player, 500, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(200, "", player, 100, 60, 250, 200, nil, nil, 1, true)
+        ui.addTextArea(201, "", player, 500, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
         ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
     end
+    trade:updateInterface()
 end
 
 function handleDice(name, die1, die2)
