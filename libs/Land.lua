@@ -49,6 +49,9 @@ function Land:setOwner(owner, auctionedPrice)
     if self.owner then
         tfm.exec.chatMessage(self.name .. " already has an owner", owner)
     else
+        if self.isMortgaged then
+            ui.addPopup(300 + self.landIndex, 1, self.name .. " is mortgaged, do you wish to lift it now", owner, nil, nil, nil, true)
+        end
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
             players[owner].ownedLands[self.color] = {[self.landIndex] = self.name, _lands = 1}

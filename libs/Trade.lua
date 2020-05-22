@@ -97,12 +97,9 @@ function Trade:submit(submittedBy)
             -- exchanging lands
             local partyName = partyData.name
             local otherName = partyName == self.party1.name and self.party2.name or self.party1.name
-            print(partyName)
-            print(otherName)
             for landID, _ in next, partyData.lands do
                 lands[landID]:removeOwner()
                 lands[landID]:setOwner(otherName, 0)
-                print("changed owners" .. landID)
             end
         end
         self:close()
