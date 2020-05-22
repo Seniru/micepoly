@@ -59,6 +59,16 @@ function Trade:updateInterface()
     for _, player in next, ({self.party1.name, self.party2.name}) do
         ui.updateTextArea(200, player == p1Name and p1Txt or p2Txt, player)
         ui.updateTextArea(201, player == p1Name and p2Txt or p1Txt, player)
+        ui.updateTextArea(204, player == p1Name and (
+            player1.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
+        ) or (
+            player2.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
+        ))
+        ui.updateTextArea(205, player == p1Name and (
+            player1.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
+        ) or (
+            player2.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
+        ))
     end
 end
 
