@@ -346,6 +346,9 @@ function Land:setOwner(owner, auctionedPrice)
     if self.owner then
         tfm.exec.chatMessage(self.name .. " already has an owner", owner)
     else
+        if self.isMortgaged then
+            ui.addPopup(300 + self.landIndex, 1, self.name .. " is mortgaged, do you wish to lift it now", owner, nil, nil, nil, true)
+        end
         self.owner = owner
         if not players[owner].ownedLands[self.color] then
             players[owner].ownedLands[self.color] = {[self.landIndex] = self.name, _lands = 1}
@@ -543,6 +546,16 @@ function Trade:updateInterface()
     for _, player in next, ({self.party1.name, self.party2.name}) do
         ui.updateTextArea(200, player == p1Name and p1Txt or p2Txt, player)
         ui.updateTextArea(201, player == p1Name and p2Txt or p1Txt, player)
+        ui.updateTextArea(204, player == p1Name and (
+            player1.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
+        ) or (
+            player2.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
+        ))
+        ui.updateTextArea(205, player == p1Name and (
+            player1.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
+        ) or (
+            player2.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
+        ))
     end
 end
 
@@ -581,12 +594,9 @@ function Trade:submit(submittedBy)
             -- exchanging lands
             local partyName = partyData.name
             local otherName = partyName == self.party1.name and self.party2.name or self.party1.name
-            print(partyName)
-            print(otherName)
             for landID, _ in next, partyData.lands do
                 lands[landID]:removeOwner()
                 lands[landID]:setOwner(otherName, 0)
-                print("changed owners" .. landID)
             end
         end
         self:close()
@@ -1032,8 +1042,8 @@ function startTrade(party1, party2)
         ui.addTextArea(201, "", player, 500, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
         ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
-    end
-    trade:updateInterface()
+        ui.addTextArea(204, "", player, 100, 300, 50, 30, nil, nil, 1, true)
+        ui.addTextArea(205, "", player, 100, 300, 50, 30, nil, nil, 1, true)eurt ,1 ,liln ,lin ,03 ,05 ,003 ,001 ,reyalp ,"" ,502()aerAtxeTdda.iu--,, 003 ,00201, , 30001000035  trade:updateInterface()
 end
 
 function handleDice(name, die1, die2)
@@ -1276,7 +1286,16 @@ function eventTextAreaCallback(id, name, evt)
 end
 
 function eventPopupAnswer(id, name, answer)
-    if id >= 100000 then -- trade agreements/handshakes
+    if id >= 300 and id <= 350 then -- unmortgage popup on trade
+        local landID = id - 300
+            local land = lands[landID]
+            print(land.name)
+        if answer == "yes" then
+            land:mortgage(false)
+        else
+            players[name]:addMoney(-(land.price / 2 * 0.1))
+        end
+    elseif id >= 100000 then -- trade agreements/handshakes
         print("trade handshake")
         local tradeId = id - 100000
         local party1 = Trade.handshakes[tradeId]
