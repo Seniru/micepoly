@@ -80,7 +80,7 @@ local landCategories = {
 
 -- text area ids to remove on close events
 local closeSequence = {
-        [200] = {200, 201, 202, 203},
+        [200] = {200, 201, 202, 203, 204, 205},
         [10000] = {10000, 10001, 10002, 10003, 10004, 10005},
         [11002] = {11000, 11001, 11002},
         [14000] = {14000, 14001, 14002},
@@ -543,19 +543,28 @@ function Trade:updateInterface()
         end
     end
 
+    --[[local p1CardTxt = p1Name .. 
+        (player1.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (chance)" ..
+        (player1.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
+        (player1.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (commu)" ..
+        (player1.hasJailFreeChance and "</a>" or "</N2>")
+
+    local p2CardTxt = p2Name .. 
+        (player2.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (chance)" ..
+        (player2.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
+        (player2.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (commu)" ..
+        (player2.hasJailFreeChance and "</a>" or "</N2>")]]
+
     for _, player in next, ({self.party1.name, self.party2.name}) do
         ui.updateTextArea(200, player == p1Name and p1Txt or p2Txt, player)
         ui.updateTextArea(201, player == p1Name and p2Txt or p1Txt, player)
-        ui.updateTextArea(204, player == p1Name and (
-            player1.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
-        ) or (
-            player2.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
-        ))
-        ui.updateTextArea(205, player == p1Name and (
-            player1.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
-        ) or (
-            player2.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
-        ))
+        --[[if players[player].hasJailFreeCards.chance then
+            ui.addTextArea(206, "<a href='event:trade-addJailFreeChance" .. self.id .. "'> [ + ] </a>", p1Name, player == p1Name and 100 or 500, 300, 50, 50, nil, nil, 0.5, true)
+        end]]
     end
 end
 
@@ -568,6 +577,20 @@ function Trade:addLand(player, landId, add)
     self.party1.submitted = false
     self.party2.submitted = false
     self:updateInterface()
+end
+
+function Trade:addMoney(player, amount)
+    local playerObj = players[player]
+    if not amount then
+        tfm.exec.chatMessage("<R>Please specify a valid number!", player)
+    elseif amount > playerObj.money then
+        tfm.exec.chatMessage("<R>Not enough money for that action!", player)
+    else
+        local party = player == self.party1.name and 1 or 2
+        self["party" .. party].money = amount
+        ui.updateTextArea(204, "<a href='event:trade-addMoney:" .. self.id .. "'>Money: $" .. amount .. "</a>", player)
+        ui.updateTextArea(205, "<a href='event:trade-addMoney:" .. self.id .. "'>Money: $" .. amount .. "</a>", player == self.party1.name and self.party2.name or self.party1.name)
+    end
 end
 
 function Trade:close(closedBy)
@@ -591,13 +614,16 @@ function Trade:submit(submittedBy)
     if self.party1.submitted and self.party2.submitted then
         -- both parties submitted, start the transaction
         for party, partyData in next, ({self.party1, self.party2}) do
-            -- exchanging lands
             local partyName = partyData.name
             local otherName = partyName == self.party1.name and self.party2.name or self.party1.name
+            -- exchanging lands
             for landID, _ in next, partyData.lands do
                 lands[landID]:removeOwner()
                 lands[landID]:setOwner(otherName, 0)
             end
+            -- exchanging money
+            players[partyName]:addMoney(-(partyData.money))
+            players[otherName]:addMoney(partyData.money)
         end
         self:close()
     end
@@ -1042,8 +1068,10 @@ function startTrade(party1, party2)
         ui.addTextArea(201, "", player, 500, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
         ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
-        ui.addTextArea(204, "", player, 100, 300, 50, 30, nil, nil, 1, true)
-        ui.addTextArea(205, "", player, 100, 300, 50, 30, nil, nil, 1, true)eurt ,1 ,liln ,lin ,03 ,05 ,003 ,001 ,reyalp ,"" ,502()aerAtxeTdda.iu--,, 003 ,00201, , 30001000035  trade:updateInterface()
+        ui.addTextArea(204, "<a href='event:trade-addMoney:" .. tradeId .. "'>Money: $0</a>", player, 100, 300, 250, 30, nil, nil, 1, true)
+        ui.addTextArea(205, "<a href='event:trade-addMoney:" .. tradeId .. "'>Money: $0</a>", player, 500, 300, 250, 30, nil, nil, 1, true)
+    end
+    trade:updateInterface()
 end
 
 function handleDice(name, die1, die2)
@@ -1281,6 +1309,8 @@ function eventTextAreaCallback(id, name, evt)
             Trade.trades[players[name].tradeID]:addLand(name, tonumber(value))
         elseif key == "trade-submit" then
             Trade.trades[value]:submit(name)
+        elseif key == "trade-addMoney" then
+            ui.addPopup(400, 2, "Specify the amount", name, nil, nil, nil, true)
         end
     end
 end
@@ -1295,6 +1325,9 @@ function eventPopupAnswer(id, name, answer)
         else
             players[name]:addMoney(-(land.price / 2 * 0.1))
         end
+    elseif id == 400 then -- cash transaction popup
+        print("cash transaction")
+        Trade.trades[players[name].tradeID]:addMoney(name, tonumber(answer))
     elseif id >= 100000 then -- trade agreements/handshakes
         print("trade handshake")
         local tradeId = id - 100000
