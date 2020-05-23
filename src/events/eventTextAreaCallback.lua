@@ -77,6 +77,8 @@ function eventTextAreaCallback(id, name, evt)
             Trade.trades[players[name].tradeID]:addLand(name, tonumber(value))
         elseif key == "trade-submit" then
             Trade.trades[value]:submit(name)
+        elseif key == "trade-addMoney" then
+            ui.addPopup(400, 2, "Specify the amount", name, nil, nil, nil, true)
         end
     end
 end

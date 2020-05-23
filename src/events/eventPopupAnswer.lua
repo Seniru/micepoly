@@ -8,6 +8,9 @@ function eventPopupAnswer(id, name, answer)
         else
             players[name]:addMoney(-(land.price / 2 * 0.1))
         end
+    elseif id == 400 then -- cash transaction popup
+        print("cash transaction")
+        Trade.trades[players[name].tradeID]:addMoney(name, tonumber(answer))
     elseif id >= 100000 then -- trade agreements/handshakes
         print("trade handshake")
         local tradeId = id - 100000

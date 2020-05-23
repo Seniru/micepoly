@@ -56,19 +56,28 @@ function Trade:updateInterface()
         end
     end
 
+    --[[local p1CardTxt = p1Name .. 
+        (player1.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (chance)" ..
+        (player1.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
+        (player1.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (commu)" ..
+        (player1.hasJailFreeChance and "</a>" or "</N2>")
+
+    local p2CardTxt = p2Name .. 
+        (player2.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (chance)" ..
+        (player2.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
+        (player2.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
+        "Get out of jail free (commu)" ..
+        (player2.hasJailFreeChance and "</a>" or "</N2>")]]
+
     for _, player in next, ({self.party1.name, self.party2.name}) do
         ui.updateTextArea(200, player == p1Name and p1Txt or p2Txt, player)
         ui.updateTextArea(201, player == p1Name and p2Txt or p1Txt, player)
-        ui.updateTextArea(204, player == p1Name and (
-            player1.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
-        ) or (
-            player2.hasJailFreeChance and "<a href='event:trade-jailchance" .. id .. "'>Get out of Jail free chance</a>" or "<N2>Get oug of Jail Free chance</N2>"
-        ))
-        ui.updateTextArea(205, player == p1Name and (
-            player1.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
-        ) or (
-            player2.hasJailFreeCommu and "<a href='event:trade-jailcommu" .. id .. "'>Get out of Jail free community</a>" or "<N2>Get oug of Jail Free commu</N2>"
-        ))
+        --[[if players[player].hasJailFreeCards.chance then
+            ui.addTextArea(206, "<a href='event:trade-addJailFreeChance" .. self.id .. "'> [ + ] </a>", p1Name, player == p1Name and 100 or 500, 300, 50, 50, nil, nil, 0.5, true)
+        end]]
     end
 end
 
@@ -81,6 +90,20 @@ function Trade:addLand(player, landId, add)
     self.party1.submitted = false
     self.party2.submitted = false
     self:updateInterface()
+end
+
+function Trade:addMoney(player, amount)
+    local playerObj = players[player]
+    if not amount then
+        tfm.exec.chatMessage("<R>Please specify a valid number!", player)
+    elseif amount > playerObj.money then
+        tfm.exec.chatMessage("<R>Not enough money for that action!", player)
+    else
+        local party = player == self.party1.name and 1 or 2
+        self["party" .. party].money = amount
+        ui.updateTextArea(204, "<a href='event:trade-addMoney:" .. self.id .. "'>Money: $" .. amount .. "</a>", player)
+        ui.updateTextArea(205, "<a href='event:trade-addMoney:" .. self.id .. "'>Money: $" .. amount .. "</a>", player == self.party1.name and self.party2.name or self.party1.name)
+    end
 end
 
 function Trade:close(closedBy)
@@ -104,13 +127,16 @@ function Trade:submit(submittedBy)
     if self.party1.submitted and self.party2.submitted then
         -- both parties submitted, start the transaction
         for party, partyData in next, ({self.party1, self.party2}) do
-            -- exchanging lands
             local partyName = partyData.name
             local otherName = partyName == self.party1.name and self.party2.name or self.party1.name
+            -- exchanging lands
             for landID, _ in next, partyData.lands do
                 lands[landID]:removeOwner()
                 lands[landID]:setOwner(otherName, 0)
             end
+            -- exchanging money
+            players[partyName]:addMoney(-(partyData.money))
+            players[otherName]:addMoney(partyData.money)
         end
         self:close()
     end

@@ -434,8 +434,10 @@ function startTrade(party1, party2)
         ui.addTextArea(201, "", player, 500, 60, 250, 200, nil, nil, 1, true)
         ui.addTextArea(202, "<a href='event:trade-submit:" .. tradeId .. "'>Submit</a>", player, 380, 60, 50, 30, nil, nil, 1, true)
         ui.addTextArea(203, "<a href='event:trade-cancel:" .. tradeId .. "'>Cancel</a>", player, 380, 100, 50, 30, nil, nil, 1, true)
-        ui.addTextArea(204, "", player, 100, 300, 50, 30, nil, nil, 1, true)
-        ui.addTextArea(205, "", player, 100, 300, 50, 30, nil, nil, 1, true)eurt ,1 ,liln ,lin ,03 ,05 ,003 ,001 ,reyalp ,"" ,502()aerAtxeTdda.iu--,, 003 ,00201, , 30001000035  trade:updateInterface()
+        ui.addTextArea(204, "<a href='event:trade-addMoney:" .. tradeId .. "'>Money: $0</a>", player, 100, 300, 250, 30, nil, nil, 1, true)
+        ui.addTextArea(205, "<a href='event:trade-addMoney:" .. tradeId .. "'>Money: $0</a>", player, 500, 300, 250, 30, nil, nil, 1, true)
+    end
+    trade:updateInterface()
 end
 
 function handleDice(name, die1, die2)
