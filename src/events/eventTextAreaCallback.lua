@@ -79,6 +79,10 @@ function eventTextAreaCallback(id, name, evt)
             Trade.trades[value]:submit(name)
         elseif key == "trade-addMoney" then
             ui.addPopup(400, 2, "Specify the amount", name, nil, nil, nil, true)
+        elseif key == "trade-jailFreeChance" then
+            Trade.trades[value]:addCard(name, "Chance")
+        elseif key == "trade-jailFreeCommu" then
+            Trade.trades[value]:addCard(name, "Commu")
         end
     end
 end

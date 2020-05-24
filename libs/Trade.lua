@@ -56,28 +56,9 @@ function Trade:updateInterface()
         end
     end
 
-    --[[local p1CardTxt = p1Name .. 
-        (player1.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
-        "Get out of jail free (chance)" ..
-        (player1.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
-        (player1.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
-        "Get out of jail free (commu)" ..
-        (player1.hasJailFreeChance and "</a>" or "</N2>")
-
-    local p2CardTxt = p2Name .. 
-        (player2.hasJailFreeChance and "<a href='event:trade-addJailFreeChance:" .. id .."'>" or "<N2>") .. 
-        "Get out of jail free (chance)" ..
-        (player2.hasJailFreeChance and "</a>" or "</N2>") .. " | " .. 
-        (player2.hasJailFreeCommu and "<a href='event:trade-addJailFreeCommu:" .. id .."'>" or "<N2>") .. 
-        "Get out of jail free (commu)" ..
-        (player2.hasJailFreeChance and "</a>" or "</N2>")]]
-
     for _, player in next, ({self.party1.name, self.party2.name}) do
         ui.updateTextArea(200, player == p1Name and p1Txt or p2Txt, player)
         ui.updateTextArea(201, player == p1Name and p2Txt or p1Txt, player)
-        --[[if players[player].hasJailFreeCards.chance then
-            ui.addTextArea(206, "<a href='event:trade-addJailFreeChance" .. self.id .. "'> [ + ] </a>", p1Name, player == p1Name and 100 or 500, 300, 50, 50, nil, nil, 0.5, true)
-        end]]
     end
 end
 
@@ -90,6 +71,18 @@ function Trade:addLand(player, landId, add)
     self.party1.submitted = false
     self.party2.submitted = false
     self:updateInterface()
+end
+
+function Trade:addCard(player, type)
+    local party = player == self.party1.name and 1 or 2
+    local hasJailFreeChance, hasJailFreeCommu = players[player].hasJailFreeCards["chance"], players[player].hasJailFreeCards["community chest"]
+    self["party" .. party]["hasJailFree" .. type] = type == "Chance" and hasJailFreeChance or hasJailFreeCommu
+    local addJailFreeChance, addJailFreeCommu = self["party" .. party].hasJailFreeChance, self["party" .. party].hasJailFreeCommu
+    local res = player .. 
+        ((addJailFreeChance and "<T>" or "") .. (hasJailFreeChance and "<a href='event:jailFreeChance:" .. self.id .. "'>" or "<N2>") .. "Get out of jail free (chance) " .. (hasJailFreeChance and "</a>" or "</N2>") .. (addJailFreeChance and "</T>" or "")) .. "|" .. 
+        ((addJailFreeCommu and "<T>" or "") .. (hasJailFreeCommu and "<a href='event:jailFreeCommu:" .. self.id .. "'>" or "<N2>") .. "Get out of jail free (commu)" .. (hasJailFreeCommu and "</a>" or "</N2>") .. (addJailFreeCommu and "</T>" or ""))
+    ui.updateTextArea(206, res, player)
+    ui.updateTextArea(207, res, player == self.party1.name and self.party2.name or self.party1.name)
 end
 
 function Trade:addMoney(player, amount)
@@ -137,6 +130,15 @@ function Trade:submit(submittedBy)
             -- exchanging money
             players[partyName]:addMoney(-(partyData.money))
             players[otherName]:addMoney(partyData.money)
+            -- exchanging cards
+            if partyData.hasJailFreeChance then
+                players[partyName].hasJailFreeCards["chance"] = false
+                players[otherName].hasJailFreeCards["chance"] = true
+            end
+            if partyData.hasJailFreeCommu then
+                players[partyName].hasJailFreeCards["community chest"] = false
+                players[otherName].hasJailFreeCards["community chest"] = true
+            end
         end
         self:close()
     end
