@@ -249,7 +249,7 @@ function initLands()
     lands[26] = Land{26, "Elisah`s Teleporter", price = 2000, color = "teleporter", landRent = 250, houseRents = {500, 1000, 2000}}
     lands[27] = Land{27, "Kürbisses-Nacht Streets", price = 2600, color = "yellow", landRent = 220, houseRents = {1100, 3300, 8000, 9750}, hotelRent = 11500, buildCost = 1500}
     lands[28] = Land{28, "Kürbisses-Nacht Attic", price = 2600, color = "yellow", landRent = 220, houseRents = {1100, 3300, 8000, 9750}, hotelRent = 11500, buildCost = 1500}
-    lands[29] = Land{29, "Fraises Factory", price = 1500, color = "factory", landRent = 4, houseRents = {10}, isSpecial = true}
+    --[[lands[29] = Land{29, "Fraises Factory", price = 1500, color = "factory", landRent = 4, houseRents = {10}, isSpecial = true}
     lands[30] = Land{30, "Kürbisses-Nacht Graveyard", price = 2800, color = "yellow", landRent = 240, houseRents = {1200, 3600, 8500, 10250}, hotelRent = 12000, buildCost = 1500}
     lands[31] = Land{31, "Go to Jail", isSpecial = true}
     lands[32] = Land{32, "Amazonia", price = 3000, color = "green", landRent = 260, houseRents = {1300, 3900, 9000, 11000}, hotelRent = 12750, buildCost = 2000}
@@ -260,7 +260,7 @@ function initLands()
     lands[37] = Land{37, "Chance", isSpecial = true}
     lands[38] = Land{38, "Haunted Library", price = 3500, color = "dark blue", landRent = 350, houseRents = {1750, 5000, 11000, 13000}, hotelRent = 15000, buildCost = 2000}
     lands[39] = Land{39, "Super Tax", isSpecial = true}
-    lands[40] = Land{40, "Temple", price = 4000, color = "dark blue", landRent = 500, houseRents = {2000, 6000, 14000, 17000}, hotelRent = 20000, buildCost = 2000}
+    lands[40] = Land{40, "Temple", price = 4000, color = "dark blue", landRent = 500, houseRents = {2000, 6000, 14000, 17000}, hotelRent = 20000, buildCost = 2000}]]
     
     local chanceFn = function(land, player)
         local curr = currentChance
@@ -290,6 +290,12 @@ function initLands()
         commChestFn(self, player)
     end
 
+    lands[5].onLand = function(self, player) -- income tax
+        ui.addTextArea(14000, "Income Tax<br>Pay 2000 or 10% of your total worth", player.name, 300, 200, 200, 100, nil, nil, 1, true)
+        ui.addTextArea(14001, "<a href='event:incomeTaxFull'>Pay 2000</a>", player.name, 300, 320, 90, 30, nil, nil, 1, true)
+        ui.addTextArea(14002, "<a href='event:incomeTax10%'>Pay 10%</a>", player.name, 410, 320, 90, 30, nil, nil, 1, true)
+    end
+
     lands[8].onLand = function(self, player) --chance
         chanceFn(self, player)
     end
@@ -302,7 +308,7 @@ function initLands()
         chanceFn(self, player)
     end
 
-    lands[34].onLand = function(self, player) --community chest
+    --[[lands[34].onLand = function(self, player) --community chest
         commChestFn(self, player)
     end
 
@@ -310,11 +316,6 @@ function initLands()
         chanceFn(self, player)
     end
 
-    lands[5].onLand = function(self, player) -- income tax
-        ui.addTextArea(14000, "Income Tax<br>Pay 2000 or 10% of your total worth", player.name, 300, 200, 200, 100, nil, nil, 1, true)
-        ui.addTextArea(14001, "<a href='event:incomeTaxFull'>Pay 2000</a>", player.name, 300, 320, 90, 30, nil, nil, 1, true)
-        ui.addTextArea(14002, "<a href='event:incomeTax10%'>Pay 10%</a>", player.name, 410, 320, 90, 30, nil, nil, 1, true)
-    end
 
     lands[39].onLand = function(self, player) -- super tax
         tfm.exec.chatMessage("Super Tax! Pay $1000", player.name)
@@ -323,7 +324,7 @@ function initLands()
 
     lands[31].onLand = function(self, player)
         player:goToJail()
-    end
+    end]]
 
     displayLands()
     
@@ -474,8 +475,8 @@ function handleDice(name, die1, die2)
     else
         players[name].current = players[name].current + total
         --giving salary after passing one round
-        if players[name].current > 40 then
-            players[name].current = players[name].current - 40
+        if players[name].current > #lands then
+            players[name].current = players[name].current - #lands
             players[name]:addMoney(2000)
         end
 
